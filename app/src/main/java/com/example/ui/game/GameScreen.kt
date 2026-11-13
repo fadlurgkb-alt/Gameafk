@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
 import com.example.R
 import android.graphics.Paint
 import android.graphics.Typeface
@@ -1224,9 +1226,9 @@ fun GameCanvas(
     val infiniteTransition = rememberInfiniteTransition(label = "canvas_animation")
     val time by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 1000f,
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000000, easing = LinearEasing),
+            animation = tween(60000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "time"
@@ -1235,9 +1237,9 @@ fun GameCanvas(
     val fireTransition = rememberInfiniteTransition(label = "fire_animation")
     val fireTime by fireTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 1000f,
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(15000, easing = LinearEasing),
+            animation = tween(12000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "fireTime"
@@ -1251,6 +1253,14 @@ fun GameCanvas(
         else -> 1          // Prasejarah
     }
     val activeEra = overrideEra ?: naturalEra
+
+    // Bitmaps pixel art era & sprite unit
+    val imgPrimitif = ImageBitmap.imageResource(id = R.drawable.img_era_primitif)
+    val imgKerajaan = ImageBitmap.imageResource(id = R.drawable.img_era_kerajaan)
+    val imgModern = ImageBitmap.imageResource(id = R.drawable.img_era_modern)
+    val imgCyberpunk = ImageBitmap.imageResource(id = R.drawable.img_era_cyberpunk)
+    val imgUnitAxe = ImageBitmap.imageResource(id = R.drawable.img_unit_stone_axe)
+    val imgUnitSpear = ImageBitmap.imageResource(id = R.drawable.img_unit_spear)
 
     val (wildTrees, wildStones) = remember { generateWilderness() }
 
@@ -1532,15 +1542,27 @@ fun GameCanvas(
             return@Canvas
         }
 
-        // 1. Panggil VillageRenderer berdasarkan era aktif
-        // Renderer ini menggambar desa secara prosedural dan menampilkan bangunan
-        // sesuai state yang sudah terbuka (fog-of-war built-in).
-        when (activeEra) {
-            4 -> CyberpunkVillageRenderer.drawVillage(this, state, time, size.width, size.height)
-            3 -> ModernVillageRenderer.drawVillage(this, state, time, size.width, size.height)
-            2 -> KingdomVillageRenderer.drawVillage(this, state, time, size.width, size.height)
-            else -> PrehistoricVillageRenderer.drawVillage(this, state, time, size.width, size.height)
+        // Panggil PixelWorldRenderer: render pixel art resolusi penuh 1254x1254
+        // lengkap dengan awan berarak, riak sungai, tanaman, hewan ternak,
+        // warga beraktivitas, asap cerobong & kabut alami untuk plot terkunci
+        val currentBitmap = when (activeEra) {
+            4 -> imgCyberpunk
+            3 -> imgModern
+            2 -> imgKerajaan
+            else -> imgPrimitif
         }
+
+        PixelWorldRenderer.drawWorld(
+            drawScope = this,
+            state = state,
+            activeEra = activeEra,
+            time = time,
+            w = size.width,
+            h = size.height,
+            eraBitmap = currentBitmap,
+            imgUnitAxe = imgUnitAxe,
+            imgUnitSpear = imgUnitSpear
+        )
 
         // 3. Living Ambient Lighting over Real Artwork
         val pulse = (sin(time * 3f) + 1f) * 0.15f
