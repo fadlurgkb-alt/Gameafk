@@ -239,27 +239,32 @@ export const INITIAL_GAME_STATE = {
 // 8. FORMULA COMBAT POWER (CP) TOTAL
 // ----------------------------------------------------------------------------
 export function calculateCombatPower(state) {
+  if (!state) return 1000;
   let cp = 0;
 
   // Pasukan
-  cp += (state.currentPasukan + state.garrisonedPasukan) * 150;
-  cp += state.maxGerbangHp * 2;
+  cp += ((state.currentPasukan || 0) + (state.garrisonedPasukan || 0)) * 150;
+  cp += (state.maxGerbangHp || 0) * 2;
 
   // Komandan Dimiliki
-  state.commanders.forEach((c) => {
-    if (c.owned) {
-      cp += (c.baseAtk * (c.stars || 1)) + (c.baseHp * 0.1);
-    }
-  });
+  if (Array.isArray(state.commanders)) {
+    state.commanders.forEach((c) => {
+      if (c && c.owned) {
+        cp += ((c.baseAtk || 50) * (c.stars || 1)) + ((c.baseHp || 100) * 0.1);
+      }
+    });
+  }
 
   // Senjata Ditempa
-  state.forgedWeapons.forEach((wId) => {
-    const w = ARMORY_WEAPONS.find((item) => item.id === wId);
-    if (w) cp += (w.atkBonus * 5) + (w.hpBonus * 2);
-  });
+  if (Array.isArray(state.forgedWeapons)) {
+    state.forgedWeapons.forEach((wId) => {
+      const w = ARMORY_WEAPONS.find((item) => item.id === wId);
+      if (w) cp += (w.atkBonus * 5) + (w.hpBonus * 2);
+    });
+  }
 
   // Level Balai Kota
-  const thLvl = state.buildingLevels.town_hall || 1;
+  const thLvl = (state.buildingLevels && state.buildingLevels.town_hall) || 1;
   cp += thLvl * 5000;
 
   return Math.floor(cp);

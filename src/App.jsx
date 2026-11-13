@@ -33,14 +33,24 @@ const STORAGE_KEY = 'GENESIS_PIXEL_SAVE_V3';
 
 export default function App() {
   const [state, setState] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
         const parsed = JSON.parse(saved);
-        return { ...INITIAL_GAME_STATE, ...parsed };
-      } catch (e) {
-        console.error(e);
+        return {
+          ...INITIAL_GAME_STATE,
+          ...parsed,
+          commanders: (Array.isArray(parsed.commanders) && parsed.commanders.length >= INITIAL_GAME_STATE.commanders.length)
+            ? parsed.commanders
+            : INITIAL_GAME_STATE.commanders,
+          buildingLevels: { ...INITIAL_GAME_STATE.buildingLevels, ...(parsed.buildingLevels || {}) },
+          unlockedNodes: Array.isArray(parsed.unlockedNodes) ? parsed.unlockedNodes : INITIAL_GAME_STATE.unlockedNodes,
+          forgedWeapons: Array.isArray(parsed.forgedWeapons) ? parsed.forgedWeapons : INITIAL_GAME_STATE.forgedWeapons,
+          garrisonedHeroes: Array.isArray(parsed.garrisonedHeroes) ? parsed.garrisonedHeroes : INITIAL_GAME_STATE.garrisonedHeroes
+        };
       }
+    } catch (e) {
+      console.warn('Gagal memuat save, memuat state default:', e);
     }
     return INITIAL_GAME_STATE;
   });
@@ -57,7 +67,8 @@ export default function App() {
 
   // Passive Zenith Rate calculation
   const zenithRate = ALL_BUILDINGS.reduce((sum, b) => {
-    const lvl = state.buildingLevels[b.id] || (state.unlockedNodes.includes(b.id) ? 1 : 0);
+    const lvl = (state.buildingLevels && state.buildingLevels[b.id])
+      || (Array.isArray(state.unlockedNodes) && state.unlockedNodes.includes(b.id) ? 1 : 0);
     if (lvl <= 0) return sum;
     return sum + (b.zenithPerSec * lvl);
   }, 5.0);
@@ -82,7 +93,8 @@ export default function App() {
 
         // Building yields
         ALL_BUILDINGS.forEach((b) => {
-          const lvl = prev.buildingLevels[b.id] || (prev.unlockedNodes.includes(b.id) ? 1 : 0);
+          const lvl = (prev.buildingLevels && prev.buildingLevels[b.id])
+            || (Array.isArray(prev.unlockedNodes) && prev.unlockedNodes.includes(b.id) ? 1 : 0);
           if (lvl > 0 && b.produces) {
             const yieldAmt = b.ratePerSec * lvl;
             if (b.produces === 'kayu') newKayu += yieldAmt;
@@ -177,13 +189,15 @@ export default function App() {
       for (const [resKey, amount] of Object.entries(cost)) {
         updated[resKey] = Math.max(0, (updated[resKey] || 0) - amount);
       }
-      const curLvl = prev.buildingLevels[building.id] || (prev.unlockedNodes.includes(building.id) ? 1 : 0);
+      const curLvl = (prev.buildingLevels && prev.buildingLevels[building.id])
+        || (Array.isArray(prev.unlockedNodes) && prev.unlockedNodes.includes(building.id) ? 1 : 0);
       updated.buildingLevels = {
-        ...prev.buildingLevels,
+        ...(prev.buildingLevels || {}),
         [building.id]: curLvl + 1
       };
-      if (!updated.unlockedNodes.includes(building.id)) {
-        updated.unlockedNodes = [...prev.unlockedNodes, building.id];
+      const unNodes = Array.isArray(prev.unlockedNodes) ? prev.unlockedNodes : [];
+      if (!unNodes.includes(building.id)) {
+        updated.unlockedNodes = [...unNodes, building.id];
       }
       if (building.id === 'gudang') updated.maxStorage += 500;
       if (building.id === 'tembok') {
@@ -325,10 +339,11 @@ export default function App() {
   // Garrison Hero Toggle
   const handleToggleGarrison = (heroName) => {
     setState((prev) => {
-      const isAlready = prev.garrisonedHeroes.includes(heroName);
+      const gHeroes = Array.isArray(prev.garrisonedHeroes) ? prev.garrisonedHeroes : [];
+      const isAlready = gHeroes.includes(heroName);
       const nextHeroes = isAlready
-        ? prev.garrisonedHeroes.filter((h) => h !== heroName)
-        : [...prev.garrisonedHeroes, heroName];
+        ? gHeroes.filter((h) => h !== heroName)
+        : [...gHeroes, heroName];
       return { ...prev, garrisonedHeroes: nextHeroes };
     });
   };

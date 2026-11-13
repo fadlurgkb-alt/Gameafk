@@ -5,10 +5,11 @@ export default function ProfileModal({ isOpen, onClose, state, onSelectAvatar })
   if (!isOpen) return null;
 
   const totalCP = calculateCombatPower(state);
-  const currentAvatarHero = state.commanders.find((c) => c.id === state.avatarId)
-    || state.commanders[0];
+  const currentAvatarHero = (Array.isArray(state.commanders) && state.commanders.find((c) => c.id === state.avatarId))
+    || (Array.isArray(state.commanders) && state.commanders[0])
+    || { icon: '👑', color: '#3B82F6', name: 'Pemimpin' };
 
-  const ownedHeroes = state.commanders.filter((c) => c.owned);
+  const ownedHeroes = Array.isArray(state.commanders) ? state.commanders.filter((c) => c.owned) : [];
 
   return (
     <div className="modal-backdrop">

@@ -12,9 +12,9 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Era detection
-  const eraId = state.unlockedNodes.includes('brain_link') ? 'cyberpunk'
-    : state.unlockedNodes.includes('pengalengan_makanan') ? 'modern'
-    : state.unlockedNodes.includes('domestikasi_hewan') ? 'kerajaan'
+  const eraId = Array.isArray(state.unlockedNodes) && state.unlockedNodes.includes('brain_link') ? 'cyberpunk'
+    : Array.isArray(state.unlockedNodes) && state.unlockedNodes.includes('pengalengan_makanan') ? 'modern'
+    : Array.isArray(state.unlockedNodes) && state.unlockedNodes.includes('domestikasi_hewan') ? 'kerajaan'
     : 'primitif';
 
   const eraBgMap = {

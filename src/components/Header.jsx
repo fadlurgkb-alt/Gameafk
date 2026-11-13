@@ -12,8 +12,9 @@ export default function Header({
   onMaxAll
 }) {
   const totalCP = calculateCombatPower(state);
-  const activeAvatar = state.commanders.find((c) => c.id === state.avatarId)
-    || state.commanders[0];
+  const activeAvatar = (Array.isArray(state.commanders) && state.commanders.find((c) => c.id === state.avatarId))
+    || (Array.isArray(state.commanders) && state.commanders[0])
+    || { icon: '👑', color: '#3B82F6', name: 'Pemimpin' };
 
   return (
     <header style={{

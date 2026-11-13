@@ -20,7 +20,8 @@ export default function BuildingDetailModal({
 }) {
   if (!isOpen || !building) return null;
 
-  const currentLvl = state.buildingLevels[building.id] || (state.unlockedNodes.includes(building.id) ? 1 : 0);
+  const currentLvl = (state.buildingLevels && state.buildingLevels[building.id])
+    || (Array.isArray(state.unlockedNodes) && state.unlockedNodes.includes(building.id) ? 1 : 0);
   const cost = calculateBuildingCost(building, currentLvl);
 
   let canAfford = true;
