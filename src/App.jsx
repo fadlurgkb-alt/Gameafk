@@ -56,7 +56,7 @@ export default function App() {
     return INITIAL_GAME_STATE;
   });
 
-  const [activeTab, setActiveTab] = useState('bangunan');
+  const [activeTab, setActiveTab] = useState('peta');
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [isBarracksOpen, setIsBarracksOpen] = useState(false);
   const [isGudangOpen, setIsGudangOpen] = useState(false);
@@ -459,13 +459,24 @@ export default function App() {
 
   return (
     <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
+      position: 'relative',
+      width: '100vw',
+      height: '100vh',
       backgroundColor: '#070A12',
-      color: '#ECEFF1'
+      color: '#ECEFF1',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
-      {/* Header with Avatar & Combat Power */}
+      {/* 1. Fullscreen Map Canvas Layer (100% Viewport) */}
+      <PixelCanvas
+        state={state}
+        isFullscreen={true}
+        onCanvasTap={handleCanvasTap}
+        onSelectBuilding={(b) => setSelectedBuilding(b)}
+      />
+
+      {/* 2. Top Header HUD with Profile & Resources */}
       <Header
         state={state}
         zenithRate={zenithRate}
@@ -477,79 +488,118 @@ export default function App() {
         onMaxAll={handleMaxAll}
       />
 
-      {/* Main Spacious Content */}
-      <main style={{
+      {/* 3. Center Area (When tab is 'peta', completely empty and clicks pass to map!) */}
+      <div style={{
         flex: 1,
-        overflowY: 'auto',
-        padding: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px'
+        position: 'relative',
+        pointerEvents: activeTab === 'peta' ? 'none' : 'auto'
       }}>
-        {/* PETA RESPONSIF LEGA DENGAN ZOOM, PAN, & KLIK BANGUNAN RPG */}
-        <PixelCanvas
-          state={state}
-          onCanvasTap={handleCanvasTap}
-          onSelectBuilding={(b) => setSelectedBuilding(b)}
-        />
-
-        {/* Tab Panel Views */}
-        {activeTab === 'bangunan' && (
-          <BuildingsPanel
-            state={state}
-            onUpgradeBuilding={handleUpgradeBuilding}
-            onSelectBuilding={(b) => setSelectedBuilding(b)}
-          />
-        )}
-        {activeTab === 'riset' && (
-          <ResearchPanel
-            state={state}
-            onUnlockResearch={handleUnlockResearch}
-          />
-        )}
-        {activeTab === 'filsafat' && (
-          <PhilosophyPanel
-            state={state}
-            onAdoptPhilosophy={handleAdoptPhilosophy}
-          />
-        )}
-        {activeTab === 'komandan' && (
-          <CommandersPanel
-            state={state}
-            onOpenGacha={() => setIsGachaOpen(true)}
-            onForgeWeapon={handleForgeWeapon}
-            onCombineShards={handleCombineShards}
-            onToggleGarrison={handleToggleGarrison}
-          />
-        )}
-        {activeTab === 'dungeon' && (
-          <DungeonPanel
-            state={state}
-            onAttackBoss={handleAttackBoss}
-            onDefendRaid={handleDefendRaid}
-            onToggleAutoFarm={() => setState((p) => ({ ...p, autoFarmDungeon: !p.autoFarmDungeon }))}
-          />
-        )}
-        {activeTab === 'market' && (
-          <MarketPanel
-            state={state}
-            onBuyDungeonItem={handleBuyDungeonItem}
-          />
-        )}
-        {activeTab === 'kamus' && (
+        {/* Floating Glassmorphism Drawer when a tab is selected */}
+        {activeTab !== 'peta' && (
           <div style={{
-            backgroundColor: 'rgba(30, 41, 59, 0.7)',
-            padding: '16px',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
+            position: 'absolute',
+            inset: '10px 14px 10px 14px',
+            maxWidth: '720px',
+            margin: '0 auto',
+            backgroundColor: 'rgba(11, 15, 25, 0.94)',
+            backdropFilter: 'blur(22px)',
+            borderRadius: '16px',
+            border: '1.5px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 16px 45px rgba(0, 0, 0, 0.85)',
+            zIndex: 15,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
           }}>
-            <h4 style={{ color: '#FFD54F', marginBottom: '8px' }}>📖 Panduan Peradaban & Deff</h4>
-            <p style={{ fontSize: '12px', color: '#CBD5E1', lineHeight: '1.6' }}>
-              Klik bangunan manapun di peta atau di tab Bangunan untuk membuka kartu RPG bangunan tersebut dengan fungsi khususnya (Gudang, Barak, Gerbang, Balai Pengobatan, Kuil, dan lainnya).
-            </p>
+            {/* Drawer Header with Title & Back to Map button */}
+            <div style={{
+              padding: '12px 16px',
+              borderBottom: '1.5px solid rgba(255, 255, 255, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: 'rgba(30, 41, 59, 0.65)'
+            }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#F8FAFC', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {activeTab === 'bangunan' && '🏛️ Manajemen Bangunan Peradaban'}
+                {activeTab === 'riset' && '🔬 Pohon Riset & Bakat Kosmik'}
+                {activeTab === 'filsafat' && '📜 Mazhab Filosofi Peradaban'}
+                {activeTab === 'komandan' && '👥 Pasukan & 22 Komandan Perang'}
+                {activeTab === 'dungeon' && '🗺️ Arena Dungeon & Pertahanan Raid'}
+                {activeTab === 'market' && '🏪 Pasar & Perdagangan Kosmik'}
+                {activeTab === 'kamus' && '📖 Kamus Panduan Kerajaan'}
+              </h3>
+              <button
+                onClick={() => setActiveTab('peta')}
+                className="btn-pixel gold"
+                style={{ fontSize: '11px', padding: '5px 12px' }}
+                title="Tutup Panel & Kembali ke Peta Penuh"
+              >
+                🗺️ Tutup &amp; Lihat Peta
+              </button>
+            </div>
+
+            {/* Scrollable Content inside Drawer */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+              {activeTab === 'bangunan' && (
+                <BuildingsPanel
+                  state={state}
+                  onUpgradeBuilding={handleUpgradeBuilding}
+                  onSelectBuilding={(b) => setSelectedBuilding(b)}
+                />
+              )}
+              {activeTab === 'riset' && (
+                <ResearchPanel
+                  state={state}
+                  onUnlockResearch={handleUnlockResearch}
+                />
+              )}
+              {activeTab === 'filsafat' && (
+                <PhilosophyPanel
+                  state={state}
+                  onAdoptPhilosophy={handleAdoptPhilosophy}
+                />
+              )}
+              {activeTab === 'komandan' && (
+                <CommandersPanel
+                  state={state}
+                  onOpenGacha={() => setIsGachaOpen(true)}
+                  onForgeWeapon={handleForgeWeapon}
+                  onCombineShards={handleCombineShards}
+                  onToggleGarrison={handleToggleGarrison}
+                />
+              )}
+              {activeTab === 'dungeon' && (
+                <DungeonPanel
+                  state={state}
+                  onAttackBoss={handleAttackBoss}
+                  onDefendRaid={handleDefendRaid}
+                  onToggleAutoFarm={() => setState((p) => ({ ...p, autoFarmDungeon: !p.autoFarmDungeon }))}
+                />
+              )}
+              {activeTab === 'market' && (
+                <MarketPanel
+                  state={state}
+                  onBuyDungeonItem={handleBuyDungeonItem}
+                />
+              )}
+              {activeTab === 'kamus' && (
+                <div style={{
+                  backgroundColor: 'rgba(30, 41, 59, 0.7)',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)'
+                }}>
+                  <h4 style={{ color: '#FFD54F', marginBottom: '8px' }}>📖 Panduan Peradaban &amp; Deff</h4>
+                  <p style={{ fontSize: '12px', color: '#CBD5E1', lineHeight: '1.6' }}>
+                    Klik bangunan manapun di peta atau di tab Bangunan untuk membuka kartu RPG bangunan tersebut dengan fungsi khususnya (Gudang, Barak, Gerbang, Balai Pengobatan, Kuil, dan lainnya).
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
-      </main>
+      </div>
 
       {/* Bottom Tabs */}
       <Tabs activeTab={activeTab} onTabChange={setActiveTab} />

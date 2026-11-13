@@ -10,9 +10,15 @@ import {
 
 import TalentTreeCanvas from './TalentTreeCanvas';
 import DungeonArena from './DungeonArena';
+import BuildingVisual from './BuildingVisual';
 
 // Panel 1: Bangunan (23 Bangunan)
 export function BuildingsPanel({ state, onUpgradeBuilding, onSelectBuilding }) {
+  const unNodes = Array.isArray(state?.unlockedNodes) ? state.unlockedNodes : [];
+  const eraId = unNodes.includes('brain_link') ? 'cyberpunk'
+    : unNodes.includes('pengalengan_makanan') ? 'modern'
+    : unNodes.includes('domestikasi_hewan') ? 'kerajaan'
+    : 'primitif';
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <div style={{ fontSize: '12px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>
@@ -50,20 +56,21 @@ export function BuildingsPanel({ state, onUpgradeBuilding, onSelectBuilding }) {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{
-                  fontSize: '22px',
-                  width: '38px',
-                  height: '38px',
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '46px',
+                  height: '46px',
                   borderRadius: '10px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                  backgroundColor: 'rgba(15, 23, 42, 0.85)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '1px solid rgba(255, 255, 255, 0.08)'
+                  border: '1.5px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                  overflow: 'hidden'
                 }}>
-                  {b.icon}
-                </span>
+                  <BuildingVisual buildingId={b.id} eraId={eraId} size={42} />
+                </div>
                 <div>
                   <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
                     {b.name}

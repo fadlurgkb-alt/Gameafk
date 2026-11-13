@@ -1,6 +1,7 @@
 import React from 'react';
 import confetti from 'canvas-confetti';
 import { formatNumber, calculateBuildingCost } from '../gameState';
+import BuildingVisual from './BuildingVisual';
 
 export default function BuildingDetailModal({
   isOpen,
@@ -24,6 +25,12 @@ export default function BuildingDetailModal({
     || (Array.isArray(state.unlockedNodes) && state.unlockedNodes.includes(building.id) ? 1 : 0);
   const cost = calculateBuildingCost(building, currentLvl);
 
+  const unNodes = Array.isArray(state?.unlockedNodes) ? state.unlockedNodes : [];
+  const eraId = unNodes.includes('brain_link') ? 'cyberpunk'
+    : unNodes.includes('pengalengan_makanan') ? 'modern'
+    : unNodes.includes('domestikasi_hewan') ? 'kerajaan'
+    : 'primitif';
+
   let canAfford = true;
   for (const [resKey, amt] of Object.entries(cost)) {
     if ((state[resKey] || 0) < amt) {
@@ -31,16 +38,6 @@ export default function BuildingDetailModal({
       break;
     }
   }
-
-  // Choose the best image illustration for the building
-  let buildingImg = '/assets/img_building_chief_hut.png';
-  if (building.id === 'town_hall') buildingImg = '/assets/img_prehistoric_settlement.png';
-  else if (building.id === 'barak_militer') buildingImg = '/assets/img_prehistoric_troops.png';
-  else if (building.id === 'tembok') buildingImg = '/assets/img_era_kerajaan.png';
-  else if (building.id === 'dungeon') buildingImg = '/assets/img_era_cyberpunk.png';
-  else if (building.id === 'market') buildingImg = '/assets/ic_fil_perdagangan.png';
-  else if (building.id === 'hospital') buildingImg = '/assets/img_campfire_stones.png';
-  else if (building.id === 'temple') buildingImg = '/assets/ic_fil_teokrasi.png';
 
   // Specific Functional Action Handler
   const handleSpecialAction = () => {
@@ -110,18 +107,13 @@ export default function BuildingDetailModal({
               overflow: 'hidden',
               border: '2px solid #FFD54F',
               boxShadow: '0 0 25px rgba(255, 213, 79, 0.25)',
-              backgroundColor: '#1E293B'
+              backgroundColor: '#1E293B',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '12px'
             }}>
-              <img
-                src={buildingImg}
-                alt={building.name}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block'
-                }}
-              />
+              <BuildingVisual buildingId={building.id} eraId={eraId} size={110} />
               <div style={{
                 position: 'absolute',
                 top: '8px',

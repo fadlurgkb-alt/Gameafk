@@ -2,6 +2,7 @@ import React from 'react';
 
 export default function Tabs({ activeTab, onTabChange }) {
   const tabs = [
+    { id: 'peta', label: 'Peta Dunia', icon: '🗺️' },
     { id: 'bangunan', label: 'Bangunan', icon: '🏛️' },
     { id: 'riset', label: 'Riset', icon: '🔬' },
     { id: 'filsafat', label: 'Filsafat', icon: '📜' },
@@ -13,12 +14,15 @@ export default function Tabs({ activeTab, onTabChange }) {
 
   return (
     <nav style={{
+      position: 'relative',
+      zIndex: 20,
       display: 'flex',
-      backgroundColor: 'rgba(15, 23, 42, 0.98)',
-      backdropFilter: 'blur(10px)',
-      borderTop: '1.5px solid rgba(255, 255, 255, 0.08)',
-      padding: '4px',
-      overflowX: 'auto'
+      backgroundColor: 'rgba(11, 15, 25, 0.95)',
+      backdropFilter: 'blur(16px)',
+      borderTop: '1.5px solid rgba(255, 255, 255, 0.1)',
+      padding: '4px 8px',
+      overflowX: 'auto',
+      boxShadow: '0 -4px 25px rgba(0,0,0,0.5)'
     }}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
@@ -28,26 +32,26 @@ export default function Tabs({ activeTab, onTabChange }) {
             onClick={() => onTabChange(tab.id)}
             style={{
               flex: '1 0 auto',
-              minWidth: '65px',
-              padding: '8px 6px',
-              backgroundColor: isActive ? 'rgba(30, 41, 59, 0.8)' : 'transparent',
+              minWidth: '60px',
+              padding: '6px 4px',
+              backgroundColor: isActive ? 'rgba(30, 41, 59, 0.85)' : 'transparent',
               border: 'none',
-              borderBottom: isActive ? '2px solid #FFB300' : '2px solid transparent',
-              borderRadius: '6px',
+              borderBottom: isActive ? '2px solid #FFD54F' : '2px solid transparent',
+              borderRadius: '8px',
               color: isActive ? '#FFD54F' : '#94A3B8',
-              fontFamily: '"Rajdhani", sans-serif',
-              fontWeight: '700',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              fontWeight: '800',
               fontSize: '11px',
               cursor: 'pointer',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '3px',
+              gap: '2px',
               transition: 'all 0.15s ease',
               whiteSpace: 'nowrap'
             }}
           >
-            <span style={{ fontSize: '16px' }}>{tab.icon}</span>
+            <span style={{ fontSize: '18px' }}>{tab.icon}</span>
             <span>{tab.label}</span>
           </button>
         );
