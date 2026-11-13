@@ -26,6 +26,8 @@ import {
 } from './components/Dialogs';
 import GachaModal from './components/GachaModal';
 import ProfileModal from './components/ProfileModal';
+import BuildingDetailModal from './components/BuildingDetailModal';
+import BarracksModal from './components/BarracksModal';
 
 const STORAGE_KEY = 'GENESIS_PIXEL_SAVE_V3';
 
@@ -44,6 +46,8 @@ export default function App() {
   });
 
   const [activeTab, setActiveTab] = useState('bangunan');
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [isBarracksOpen, setIsBarracksOpen] = useState(false);
   const [isGudangOpen, setIsGudangOpen] = useState(false);
   const [isHospitalOpen, setIsHospitalOpen] = useState(false);
   const [isGerbangOpen, setIsGerbangOpen] = useState(false);
@@ -192,6 +196,51 @@ export default function App() {
     });
   };
 
+  // Train Single Troop
+  const handleTrainTroop = () => {
+    setState((prev) => {
+      if (prev.currentPasukan >= prev.maxPasukan) return prev;
+      if (prev.kayu < 15 || prev.batu < 10 || prev.berry < 5) return prev;
+      return {
+        ...prev,
+        kayu: prev.kayu - 15,
+        batu: prev.batu - 10,
+        berry: prev.berry - 5,
+        currentPasukan: prev.currentPasukan + 1
+      };
+    });
+  };
+
+  // Train Troops Batch
+  const handleTrainTroopsBatch = (count) => {
+    setState((prev) => {
+      const actualCount = Math.min(count, prev.maxPasukan - prev.currentPasukan);
+      const woodCost = actualCount * 15;
+      const stoneCost = actualCount * 10;
+      const berryCost = actualCount * 5;
+      if (prev.kayu < woodCost || prev.batu < stoneCost || prev.berry < berryCost) return prev;
+      return {
+        ...prev,
+        kayu: prev.kayu - woodCost,
+        batu: prev.batu - stoneCost,
+        berry: prev.berry - berryCost,
+        currentPasukan: prev.currentPasukan + actualCount
+      };
+    });
+  };
+
+  // Quick Harvest from specific building
+  const handleQuickHarvest = (building) => {
+    setState((prev) => {
+      const updated = { ...prev };
+      if (building.produces) {
+        updated[building.produces] = Math.min(prev.maxStorage, (prev[building.produces] || 0) + 50);
+      }
+      updated.totalZenith += 250;
+      return updated;
+    });
+  };
+
   // Unlock Research
   const handleUnlockResearch = (node) => {
     if (state.totalZenith < node.costZenith) return;
@@ -214,7 +263,7 @@ export default function App() {
     confetti({ particleCount: 60, spread: 90 });
   };
 
-  // Gacha Result Callback
+  // Gacha Result
   const handlePerformGacha = (pulledHero) => {
     setState((prev) => {
       const updatedCommanders = prev.commanders.map((c) => {
@@ -254,7 +303,6 @@ export default function App() {
     const key = `shard_${type}`;
     if ((state[key] || 0) < needed) return;
     setState((prev) => {
-      // Unlock one commander matching rarity or upgrade star
       const pool = prev.commanders.filter((c) => {
         if (type === 'r') return c.rarity === 'R';
         if (type === 'sr') return c.rarity === 'SR';
@@ -412,14 +460,19 @@ export default function App() {
         flexDirection: 'column',
         gap: '12px'
       }}>
-        {/* PETA RESPONSIF LEGA DENGAN ZOOM & PAN */}
-        <PixelCanvas state={state} onCanvasTap={handleCanvasTap} />
+        {/* PETA RESPONSIF LEGA DENGAN ZOOM, PAN, & KLIK BANGUNAN RPG */}
+        <PixelCanvas
+          state={state}
+          onCanvasTap={handleCanvasTap}
+          onSelectBuilding={(b) => setSelectedBuilding(b)}
+        />
 
         {/* Tab Panel Views */}
         {activeTab === 'bangunan' && (
           <BuildingsPanel
             state={state}
             onUpgradeBuilding={handleUpgradeBuilding}
+            onSelectBuilding={(b) => setSelectedBuilding(b)}
           />
         )}
         {activeTab === 'riset' && (
@@ -466,7 +519,7 @@ export default function App() {
           }}>
             <h4 style={{ color: '#FFD54F', marginBottom: '8px' }}>📖 Panduan Peradaban & Deff</h4>
             <p style={{ fontSize: '12px', color: '#CBD5E1', lineHeight: '1.6' }}>
-              Kelola 22 komandan suku legendaris, tempa 12 persenjataan, kuasai 26 jejaring kosmis, dan pertahankan gerbang kota Anda dari gelombang raid musuh!
+              Klik bangunan manapun di peta atau di tab Bangunan untuk membuka kartu RPG bangunan tersebut dengan fungsi khususnya (Gudang, Barak, Gerbang, Balai Pengobatan, Kuil, dan lainnya).
             </p>
           </div>
         )}
@@ -475,7 +528,34 @@ export default function App() {
       {/* Bottom Tabs */}
       <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Modals & Dialogs */}
+      {/* RPG Building Detail Modal (Card RPG dengan Foto di Sisi Kiri & Fungsi di Sisi Kanan) */}
+      <BuildingDetailModal
+        isOpen={Boolean(selectedBuilding)}
+        onClose={() => setSelectedBuilding(null)}
+        building={selectedBuilding}
+        state={state}
+        onUpgradeBuilding={handleUpgradeBuilding}
+        onOpenGudang={() => setIsGudangOpen(true)}
+        onOpenBarracks={() => setIsBarracksOpen(true)}
+        onOpenGerbang={() => setIsGerbangOpen(true)}
+        onOpenHospital={() => setIsHospitalOpen(true)}
+        onOpenTavern={() => setIsGachaOpen(true)}
+        onOpenDungeon={() => setActiveTab('dungeon')}
+        onOpenMarket={() => setActiveTab('market')}
+        onOpenProfile={() => setIsProfileOpen(true)}
+        onQuickHarvest={handleQuickHarvest}
+      />
+
+      {/* Barracks (Barak) Troops Training Modal */}
+      <BarracksModal
+        isOpen={isBarracksOpen}
+        onClose={() => setIsBarracksOpen(false)}
+        state={state}
+        onTrainTroop={handleTrainTroop}
+        onTrainTroopsBatch={handleTrainTroopsBatch}
+      />
+
+      {/* Other Interactive Dialogs */}
       <GudangModal
         isOpen={isGudangOpen}
         onClose={() => setIsGudangOpen(false)}

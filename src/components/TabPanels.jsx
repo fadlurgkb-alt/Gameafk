@@ -12,11 +12,11 @@ import TalentTreeCanvas from './TalentTreeCanvas';
 import DungeonArena from './DungeonArena';
 
 // Panel 1: Bangunan (23 Bangunan)
-export function BuildingsPanel({ state, onUpgradeBuilding }) {
+export function BuildingsPanel({ state, onUpgradeBuilding, onSelectBuilding }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <div style={{ fontSize: '12px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>
-        Daftar Bangunan Peradaban ({ALL_BUILDINGS.length} Bangunan)
+        Daftar Bangunan Peradaban ({ALL_BUILDINGS.length} Bangunan) • Klik untuk fungsi RPG
       </div>
 
       {ALL_BUILDINGS.map((b) => {
@@ -35,6 +35,7 @@ export function BuildingsPanel({ state, onUpgradeBuilding }) {
         return (
           <div
             key={b.id}
+            onClick={() => onSelectBuilding(b)}
             style={{
               backgroundColor: isUnlocked ? 'rgba(30, 41, 59, 0.7)' : 'rgba(15, 23, 42, 0.6)',
               border: `1.5px solid ${isUnlocked ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)'}`,
@@ -43,7 +44,9 @@ export function BuildingsPanel({ state, onUpgradeBuilding }) {
               display: 'flex',
               flexDirection: 'column',
               gap: '8px',
-              opacity: isUnlocked ? 1 : 0.65
+              opacity: isUnlocked ? 1 : 0.65,
+              cursor: 'pointer',
+              transition: 'transform 0.15s ease'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -100,20 +103,15 @@ export function BuildingsPanel({ state, onUpgradeBuilding }) {
               paddingTop: '6px',
               borderTop: '1px solid rgba(255, 255, 255, 0.06)'
             }}>
-              <div style={{ display: 'flex', gap: '8px', fontSize: '11px', flexWrap: 'wrap' }}>
-                <span style={{ color: '#94A3B8' }}>Biaya:</span>
-                {Object.entries(cost).map(([resKey, amount]) => {
-                  const hasEnough = (state[resKey] || 0) >= amount;
-                  return (
-                    <span key={resKey} style={{ color: hasEnough ? '#FCD34D' : '#F87171', fontWeight: '700' }}>
-                      {resKey}: {formatNumber(amount)}
-                    </span>
-                  );
-                })}
-              </div>
+              <span style={{ fontSize: '11px', color: '#38BDF8', fontWeight: '800' }}>
+                🔍 Buka Kartu RPG & Fungsi Bangunan ➔
+              </span>
 
               <button
-                onClick={() => onUpgradeBuilding(b, cost)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpgradeBuilding(b, cost);
+                }}
                 disabled={!canAfford}
                 className={`btn-pixel ${canAfford ? 'gold' : ''}`}
                 style={{ fontSize: '11px', padding: '6px 12px' }}
@@ -140,7 +138,7 @@ export function ResearchPanel({ state, onUnlockResearch }) {
 
 // Panel 3: Komandan & Armory Tempa Senjata (22 Komandan & 12 Senjata)
 export function CommandersPanel({ state, onOpenGacha, onForgeWeapon, onCombineShards, onToggleGarrison }) {
-  const [subTab, setSubTab] = useState('heroes'); // 'heroes' | 'armory' | 'shards'
+  const [subTab, setSubTab] = useState('heroes');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -167,7 +165,7 @@ export function CommandersPanel({ state, onOpenGacha, onForgeWeapon, onCombineSh
           className="btn-pixel gold"
           style={{ fontSize: '12px', padding: '8px 16px' }}
         >
-          🎲 Tarik Pahlawan (Gacha)
+          🎲 Tarik Pahlawan (Hujan Pedang)
         </button>
       </div>
 
@@ -352,30 +350,10 @@ export function CommandersPanel({ state, onOpenGacha, onForgeWeapon, onCombineSh
             Kumpulkan dan lebur shard untuk memanggil komandan langka (Rare, SR, SSR, UR).
           </p>
 
-          <ShardRow
-            label="Rare Shard"
-            count={state.shard_r}
-            needed={20}
-            onCombine={() => onCombineShards('r', 20)}
-          />
-          <ShardRow
-            label="SR Shard"
-            count={state.shard_sr}
-            needed={50}
-            onCombine={() => onCombineShards('sr', 50)}
-          />
-          <ShardRow
-            label="SSR Shard"
-            count={state.shard_ssr}
-            needed={100}
-            onCombine={() => onCombineShards('ssr', 100)}
-          />
-          <ShardRow
-            label="UR Mythical Shard"
-            count={state.shard_ur}
-            needed={150}
-            onCombine={() => onCombineShards('ur', 150)}
-          />
+          <ShardRow label="Rare Shard" count={state.shard_r} needed={20} onCombine={() => onCombineShards('r', 20)} />
+          <ShardRow label="SR Shard" count={state.shard_sr} needed={50} onCombine={() => onCombineShards('sr', 50)} />
+          <ShardRow label="SSR Shard" count={state.shard_ssr} needed={100} onCombine={() => onCombineShards('ssr', 100)} />
+          <ShardRow label="UR Mythical Shard" count={state.shard_ur} needed={150} onCombine={() => onCombineShards('ur', 150)} />
         </div>
       )}
     </div>
@@ -412,7 +390,6 @@ function ShardRow({ label, count, needed, onCombine }) {
 export function DungeonPanel({ state, onAttackBoss, onDefendRaid, onToggleAutoFarm }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {/* Raid Defense Alert Banner */}
       <div style={{
         backgroundColor: 'rgba(220, 38, 38, 0.15)',
         border: '1.5px solid #EF4444',
@@ -440,7 +417,6 @@ export function DungeonPanel({ state, onAttackBoss, onDefendRaid, onToggleAutoFa
         </div>
       </div>
 
-      {/* Pixel Battle Arena Canvas */}
       <DungeonArena
         state={state}
         onAttackBoss={onAttackBoss}
@@ -452,7 +428,7 @@ export function DungeonPanel({ state, onAttackBoss, onDefendRaid, onToggleAutoFa
 
 // Panel 5: Pasar & Toko Dungeon / Raid
 export function MarketPanel({ state, onBuyDungeonItem }) {
-  const [subMarket, setSubMarket] = useState('dungeon'); // 'dungeon' | 'raid'
+  const [subMarket, setSubMarket] = useState('dungeon');
 
   const dungeonItems = [
     { id: 'hp_pot', name: 'Potion HP Lv.1', cost: 200, icon: '🧪', desc: 'Sembuhkan hero saat perang' },

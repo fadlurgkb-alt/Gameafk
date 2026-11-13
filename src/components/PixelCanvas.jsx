@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { ALL_BUILDINGS } from '../gameState';
 
-export default function PixelCanvas({ state, onCanvasTap }) {
+export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -10,7 +11,7 @@ export default function PixelCanvas({ state, onCanvasTap }) {
   const dragStartRef = useRef({ x: 0, y: 0 });
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Current Era detection
+  // Era detection
   const eraId = state.unlockedNodes.includes('brain_link') ? 'cyberpunk'
     : state.unlockedNodes.includes('pengalengan_makanan') ? 'modern'
     : state.unlockedNodes.includes('domestikasi_hewan') ? 'kerajaan'
@@ -50,7 +51,6 @@ export default function PixelCanvas({ state, onCanvasTap }) {
     tapParticles: []
   });
 
-  // Preload background image
   useEffect(() => {
     const img = new Image();
     img.src = eraBgMap[eraId];
@@ -77,12 +77,11 @@ export default function PixelCanvas({ state, onCanvasTap }) {
       ctx.clearRect(0, 0, w, h);
 
       ctx.save();
-      // Apply Camera Pan & Zoom Transform
       ctx.translate(w / 2 + camera.x, h / 2 + camera.y);
       ctx.scale(camera.zoom, camera.zoom);
       ctx.translate(-w / 2, -h / 2);
 
-      // 1. Draw Era Background Terrain
+      // 1. Draw Era Background
       if (sim.bgImg) {
         ctx.drawImage(sim.bgImg, 0, 0, w, h);
       } else {
@@ -112,7 +111,7 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         ctx.fillRect(t.x + 3, t.y - 6, 10, 8);
       });
 
-      // 4. Draw Central Campfire & Rising Smoke Particles
+      // 4. Campfire
       const plazaX = 400;
       const plazaY = 280;
       const flameH = 6 + Math.sin(sim.tick * 0.35) * 3;
@@ -135,7 +134,7 @@ export default function PixelCanvas({ state, onCanvasTap }) {
       // 5. Draw Dynamic Built Structures
       const unlocked = state.unlockedNodes || [];
 
-      // Town Hall
+      // Town Hall (Balai Kota)
       if (unlocked.includes('town_hall')) {
         ctx.fillStyle = '#334155';
         ctx.fillRect(plazaX - 26, plazaY - 42, 52, 32);
@@ -143,7 +142,10 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         ctx.fillRect(plazaX - 22, plazaY - 50, 14, 10);
         ctx.fillRect(plazaX + 8, plazaY - 50, 14, 10);
         ctx.fillStyle = '#F59E0B';
-        ctx.fillRect(plazaX - 2, plazaY - 58, 4, 18); // Flag banner
+        ctx.fillRect(plazaX - 2, plazaY - 58, 4, 18);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('🏛️ Balai Kota', plazaX - 22, plazaY - 60);
       }
 
       // Rumah Warga
@@ -151,7 +153,7 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         ctx.fillStyle = '#78350F';
         ctx.fillRect(285, 230, 30, 20);
         ctx.fillStyle = '#FBBF24';
-        ctx.fillRect(280, 220, 40, 10); // Thatch roof
+        ctx.fillRect(280, 220, 40, 10);
       }
 
       // Pertanian
@@ -162,6 +164,9 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         for (let i = -18; i < 20; i += 6) {
           ctx.fillRect(242 + i, 345 + Math.sin(sim.tick * 0.1 + i) * 2, 2, 6);
         }
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('🌾 Ladang', 224, 340);
       }
 
       // Gerbang Benteng
@@ -171,7 +176,43 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         ctx.fillStyle = '#0F172A';
         ctx.fillRect(390, 125, 20, 13);
         ctx.fillStyle = '#DC2626';
-        ctx.fillRect(398, 105, 4, 15); // Red Gate Flag
+        ctx.fillRect(398, 105, 4, 15);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('🛡️ Gerbang', 376, 102);
+      }
+
+      // Barak Militer
+      if (unlocked.includes('barak_militer')) {
+        ctx.fillStyle = '#1E3A8A';
+        ctx.fillRect(505, 155, 36, 24);
+        ctx.fillStyle = '#3B82F6';
+        ctx.fillRect(500, 148, 46, 8);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('⚔️ Barak', 506, 142);
+      }
+
+      // Balai Pengobatan (Hospital)
+      if (unlocked.includes('hospital')) {
+        ctx.fillStyle = '#14532D';
+        ctx.fillRect(265, 155, 34, 24);
+        ctx.fillStyle = '#22C55E';
+        ctx.fillRect(260, 148, 44, 8);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('🏥 Obat', 268, 142);
+      }
+
+      // Gudang
+      if (unlocked.includes('gudang')) {
+        ctx.fillStyle = '#713F12';
+        ctx.fillRect(485, 230, 32, 22);
+        ctx.fillStyle = '#F59E0B';
+        ctx.fillRect(480, 222, 42, 9);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('📦 Gudang', 482, 218);
       }
 
       // Dungeon Portal
@@ -182,9 +223,12 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         ctx.fill();
         ctx.fillStyle = '#C084FC';
         ctx.fillRect(676, 416, 8, 8);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#FFF';
+        ctx.fillText('🌀 Dungeon', 655, 396);
       }
 
-      // 6. Draw Grazing Sheep & Cows
+      // 6. Draw Grazing Animals
       sim.animals.forEach((an) => {
         if (Math.abs(an.x - an.targetX) < 4) {
           if (Math.random() < 0.015) {
@@ -218,25 +262,20 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         }
 
         const stepBob = Math.sin(sim.tick * 0.28 + idx) * 2;
-        // Head
         ctx.fillStyle = '#FED7AA';
         ctx.fillRect(c.x + 2, c.y - 14 + stepBob, 6, 6);
-        // Body costume
         ctx.fillStyle = c.role === 'ksatria' ? '#64748B' : c.role === 'pemburu' ? '#78350F' : '#16A34A';
         ctx.fillRect(c.x, c.y - 8 + stepBob, 10, 10);
-        // Legs
         ctx.fillStyle = '#0F172A';
         ctx.fillRect(c.x + 1, c.y + 2 + stepBob, 3, 5);
         ctx.fillRect(c.x + 6, c.y + 2 + stepBob, 3, 5);
 
-        // Tool/Weapon
         if (c.role === 'ksatria' || c.role === 'pemburu') {
           ctx.fillStyle = '#CBD5E1';
           const toolX = c.dir > 0 ? c.x + 11 : c.x - 3;
           ctx.fillRect(toolX, c.y - 16 + stepBob, 2, 16);
         }
 
-        // Thought Bubble
         if ((sim.tick + idx * 120) % 360 < 100) {
           ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
           ctx.fillRect(c.x - 28, c.y - 32 + stepBob, 76, 14);
@@ -262,7 +301,7 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         ctx.fill();
       }
 
-      // 9. Floating Clouds & Realistic Ground Shadows
+      // 9. Floating Clouds
       sim.clouds.forEach((cl) => {
         cl.x += cl.speed;
         if (cl.x > w + 120) cl.x = -120;
@@ -303,7 +342,6 @@ export default function PixelCanvas({ state, onCanvasTap }) {
     return () => cancelAnimationFrame(animId);
   }, [state, eraId, camera]);
 
-  // Mouse & Touch Pan Handling
   const handlePointerDown = (e) => {
     isDraggingRef.current = true;
     dragStartRef.current = { x: e.clientX - camera.x, y: e.clientY - camera.y };
@@ -319,22 +357,37 @@ export default function PixelCanvas({ state, onCanvasTap }) {
   };
 
   const handlePointerUp = (e) => {
-    // If minimal movement, treat as a harvest tap
     const dist = Math.hypot(
       e.clientX - (dragStartRef.current.x + camera.x),
       e.clientY - (dragStartRef.current.y + camera.y)
     );
+
     if (dist < 6) {
       const canvas = canvasRef.current;
       if (canvas) {
         const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const clickX = (e.clientX - rect.left) * scaleX;
-        const clickY = (e.clientY - rect.top) * scaleY;
+        const screenX = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const screenY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+        // Reverse camera transform to find world coordinates
+        const worldX = (screenX - (canvas.width / 2 + camera.x)) / camera.zoom + canvas.width / 2;
+        const worldY = (screenY - (canvas.height / 2 + camera.y)) / camera.zoom + canvas.height / 2;
+
+        // Check if any building was clicked on map!
+        const hitBuilding = ALL_BUILDINGS.find((b) => {
+          return state.unlockedNodes.includes(b.id) && Math.hypot(b.plotX - worldX, b.plotY - worldY) < 40;
+        });
+
+        if (hitBuilding && onSelectBuilding) {
+          onSelectBuilding(hitBuilding);
+          isDraggingRef.current = false;
+          return;
+        }
+
+        // Otherwise, add harvest particle
         simRef.current.tapParticles.push({
-          x: clickX,
-          y: clickY,
+          x: screenX,
+          y: screenY,
           vy: -2.2,
           alpha: 1.0,
           text: '+✨'
@@ -345,20 +398,9 @@ export default function PixelCanvas({ state, onCanvasTap }) {
     isDraggingRef.current = false;
   };
 
-  // Wheel Zoom
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const zoomDelta = e.deltaY < 0 ? 0.1 : -0.1;
-    setCamera((prev) => ({
-      ...prev,
-      zoom: Math.max(0.6, Math.min(2.0, prev.zoom + zoomDelta))
-    }));
-  };
-
   return (
     <div
       ref={containerRef}
-      onWheel={handleWheel}
       style={{
         position: 'relative',
         width: '100%',
@@ -382,13 +424,13 @@ export default function PixelCanvas({ state, onCanvasTap }) {
           width: '100%',
           height: '100%',
           display: 'block',
-          cursor: isDraggingRef.current ? 'grabbing' : 'grab',
+          cursor: isDraggingRef.current ? 'grabbing' : 'pointer',
           imageRendering: 'pixelated',
           touchAction: 'none'
         }}
       />
 
-      {/* Top Left Era Badge */}
+      {/* Era Badge */}
       <div style={{
         position: 'absolute',
         top: '12px',
@@ -409,7 +451,7 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         <span style={{ textTransform: 'uppercase' }}>Era {eraId}</span>
       </div>
 
-      {/* Camera Controls (Zoom In, Zoom Out, Reset, Expand) */}
+      {/* Camera Controls */}
       <div style={{
         position: 'absolute',
         top: '12px',
@@ -417,38 +459,10 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         display: 'flex',
         gap: '6px'
       }}>
-        <button
-          onClick={() => setCamera((p) => ({ ...p, zoom: Math.min(2.0, p.zoom + 0.2) }))}
-          className="btn-pixel"
-          title="Zoom In"
-          style={{ padding: '6px 10px', fontSize: '12px' }}
-        >
-          🔍+
-        </button>
-        <button
-          onClick={() => setCamera((p) => ({ ...p, zoom: Math.max(0.6, p.zoom - 0.2) }))}
-          className="btn-pixel"
-          title="Zoom Out"
-          style={{ padding: '6px 10px', fontSize: '12px' }}
-        >
-          🔍-
-        </button>
-        <button
-          onClick={() => setCamera({ x: 0, y: 0, zoom: 1.0 })}
-          className="btn-pixel"
-          title="Reset Kamera Pusat"
-          style={{ padding: '6px 8px', fontSize: '11px' }}
-        >
-          🎯
-        </button>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="btn-pixel gold"
-          title={isExpanded ? 'Kecilkan Peta' : 'Peta Lega (Layar Penuh)'}
-          style={{ padding: '6px 10px', fontSize: '12px' }}
-        >
-          {isExpanded ? '🗗 Kecilkan' : '⛶ Peta Lega'}
-        </button>
+        <button onClick={() => setCamera((p) => ({ ...p, zoom: Math.min(2.0, p.zoom + 0.2) }))} className="btn-pixel" title="Zoom In" style={{ padding: '6px 10px', fontSize: '12px' }}>🔍+</button>
+        <button onClick={() => setCamera((p) => ({ ...p, zoom: Math.max(0.6, p.zoom - 0.2) }))} className="btn-pixel" title="Zoom Out" style={{ padding: '6px 10px', fontSize: '12px' }}>🔍-</button>
+        <button onClick={() => setCamera({ x: 0, y: 0, zoom: 1.0 })} className="btn-pixel" title="Reset Kamera" style={{ padding: '6px 8px', fontSize: '11px' }}>🎯</button>
+        <button onClick={() => setIsExpanded(!isExpanded)} className="btn-pixel gold" style={{ padding: '6px 10px', fontSize: '12px' }}>{isExpanded ? '🗗 Kecilkan' : '⛶ Peta Lega'}</button>
       </div>
 
       {/* Bottom Hint */}
@@ -468,7 +482,7 @@ export default function PixelCanvas({ state, onCanvasTap }) {
         alignItems: 'center',
         gap: '8px'
       }}>
-        <span>✋ Geser untuk menjelajah</span> • <span>🔍 Scroll untuk zoom</span> • <span>👆 Ketuk untuk memanen</span>
+        <span>👆 Klik bangunan di peta untuk membuka fungsi RPG-nya</span>
       </div>
     </div>
   );
