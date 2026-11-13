@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatNumber, calculateCombatPower } from '../gameState';
+import { sound } from '../utils/retroAudio';
 
 export default function Header({
   state,
@@ -11,10 +12,17 @@ export default function Header({
   onGodMode,
   onMaxAll
 }) {
+  const [isMuted, setIsMuted] = useState(sound.isMuted);
   const totalCP = calculateCombatPower(state);
   const activeAvatar = (Array.isArray(state.commanders) && state.commanders.find((c) => c.id === state.avatarId))
     || (Array.isArray(state.commanders) && state.commanders[0])
     || { icon: '👑', color: '#3B82F6', name: 'Pemimpin' };
+
+  const handleToggleSound = () => {
+    const next = sound.toggleMute();
+    setIsMuted(next);
+    if (!next) sound.playClick();
+  };
 
   return (
     <header style={{
@@ -119,6 +127,14 @@ export default function Header({
             style={{ fontSize: '10px', padding: '4px 6px' }}
           >
             ⚡
+          </button>
+          <button
+            onClick={handleToggleSound}
+            title={isMuted ? 'Nyalakan Efek Suara Retro' : 'Matikan Suara'}
+            className="btn-pixel"
+            style={{ fontSize: '10px', padding: '4px 6px' }}
+          >
+            {isMuted ? '🔇' : '🔊'}
           </button>
         </div>
       </div>

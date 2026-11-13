@@ -28,6 +28,7 @@ import GachaModal from './components/GachaModal';
 import ProfileModal from './components/ProfileModal';
 import BuildingDetailModal from './components/BuildingDetailModal';
 import BarracksModal from './components/BarracksModal';
+import { sound } from './utils/retroAudio';
 
 const STORAGE_KEY = 'GENESIS_PIXEL_SAVE_V3';
 
@@ -205,6 +206,7 @@ export default function App() {
         updated.gerbangHp += 250;
       }
       if (building.id === 'barak_militer') updated.maxPasukan += 20;
+      sound.playUpgrade();
       confetti({ particleCount: 25, spread: 50 });
       return updated;
     });
@@ -215,6 +217,7 @@ export default function App() {
     setState((prev) => {
       if (prev.currentPasukan >= prev.maxPasukan) return prev;
       if (prev.kayu < 15 || prev.batu < 10 || prev.berry < 5) return prev;
+      sound.playCoin();
       return {
         ...prev,
         kayu: prev.kayu - 15,
@@ -233,6 +236,7 @@ export default function App() {
       const stoneCost = actualCount * 10;
       const berryCost = actualCount * 5;
       if (prev.kayu < woodCost || prev.batu < stoneCost || prev.berry < berryCost) return prev;
+      sound.playCoin();
       return {
         ...prev,
         kayu: prev.kayu - woodCost,
@@ -245,6 +249,7 @@ export default function App() {
 
   // Quick Harvest from specific building
   const handleQuickHarvest = (building) => {
+    sound.playHarvest();
     setState((prev) => {
       const updated = { ...prev };
       if (building.produces) {
@@ -258,6 +263,7 @@ export default function App() {
   // Unlock Research
   const handleUnlockResearch = (node) => {
     if (state.totalZenith < node.costZenith) return;
+    sound.playUpgrade();
     setState((prev) => ({
       ...prev,
       totalZenith: prev.totalZenith - node.costZenith,
@@ -269,6 +275,7 @@ export default function App() {
   // Adopt Philosophy
   const handleAdoptPhilosophy = (phil) => {
     if (state.totalZenith < phil.costZenith) return;
+    sound.playUpgrade();
     setState((prev) => ({
       ...prev,
       totalZenith: prev.totalZenith - phil.costZenith,
@@ -279,6 +286,7 @@ export default function App() {
 
   // Gacha Result
   const handlePerformGacha = (pulledHero) => {
+    sound.playGacha();
     setState((prev) => {
       const updatedCommanders = prev.commanders.map((c) => {
         if (c.id === pulledHero.id) {
@@ -350,10 +358,12 @@ export default function App() {
 
   // Attack Dungeon Boss
   const handleAttackBoss = () => {
+    sound.playAttack();
     setState((prev) => {
       const dmg = prev.damage * 10;
       const nextHp = prev.monsterHp - dmg;
       if (nextHp <= 0) {
+        sound.playUpgrade();
         const nextLvl = Math.min(100, prev.currentDungeonLevel + 1);
         const nextMon = DUNGEON_MONSTERS.find((m) => m.level === nextLvl) || DUNGEON_MONSTERS[0];
         confetti({ particleCount: 70, spread: 90 });
@@ -372,6 +382,7 @@ export default function App() {
 
   // Defend Raid
   const handleDefendRaid = () => {
+    sound.playUpgrade();
     setState((prev) => {
       confetti({ particleCount: 80, spread: 100 });
       return {
