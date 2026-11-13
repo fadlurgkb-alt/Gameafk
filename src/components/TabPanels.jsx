@@ -447,83 +447,295 @@ export function DungeonPanel({ state, onAttackBoss, onDefendRaid, onToggleAutoFa
   );
 }
 
-// Panel 5: Pasar & Toko Dungeon / Raid
+// Panel 5: Toko & Pasar Peradaban (Raven Fantasy 32x32 Pixel Art)
 export function MarketPanel({ state, onBuyDungeonItem }) {
-  const [subMarket, setSubMarket] = useState('dungeon');
+  const [activeCategory, setActiveCategory] = useState('potions');
 
-  const dungeonItems = [
-    { id: 'hp_pot', name: 'Potion HP Lv.1', cost: 200, icon: '🧪', desc: 'Sembuhkan hero saat perang' },
-    { id: 'atk_pot', name: 'Potion Atk Lv.1', cost: 200, icon: '⚡', desc: 'Tambah daya serang hero' },
-    { id: 'wood_100', name: 'Paket 100 Kayu', cost: 200, icon: '🪵', desc: 'Bahan bangunan instan' },
-    { id: 'stone_100', name: 'Paket 100 Batu', cost: 200, icon: '🪨', desc: 'Bahan batu instan' },
-    { id: 'shard_r', name: 'Token Shard Rare', cost: 50, icon: '💎', desc: 'Panggil pahlawan unggul' },
-    { id: 'ai_core', name: 'Quantum AI Core', cost: 8000, icon: '🧠', desc: 'Komponen teknologi tinggi' }
+  const categories = [
+    { id: 'potions', label: '🧪 Ramuan', icon: '🧪' },
+    { id: 'materials', label: '📦 Material', icon: '🪵' },
+    { id: 'gems', label: '💎 Permata', icon: '💎' },
+    { id: 'relics', label: '📜 Relik', icon: '📜' }
   ];
+
+  const marketCatalog = {
+    potions: [
+      { id: 'hp_pot', name: 'Potion HP Darurat', cost: 150, currency: 'dungeonCoins', icon: 'hp_pot', desc: 'Sembuhkan 500 HP pahlawan & pasukan perang saat dungeon' },
+      { id: 'mana_pot', name: 'Elixir Energi Kosmis', cost: 200, currency: 'dungeonCoins', icon: 'mana_pot', desc: 'Percepat pemulihan tenaga dan kurangi cooldown skill' },
+      { id: 'atk_pot', name: 'Potion Serangan Rage', cost: 250, currency: 'dungeonCoins', icon: 'atk_pot', desc: 'Tingkatkan damage serang hero sebesar +30% selama 60 detik' },
+      { id: 'regen_pot', name: 'Ramuan Regenerasi Alami', cost: 300, currency: 'dungeonCoins', icon: 'regen_pot', desc: 'Regenerasi 50 HP per detik selama pertempuran dungeon' }
+    ],
+    materials: [
+      { id: 'wood_100', name: 'Paket 500 Kayu Glondongan', cost: 100, currency: 'gameCoins', icon: 'wood_100', desc: 'Bahan kayu murni dari hutan lebat untuk konstruksi desa' },
+      { id: 'stone_100', name: 'Paket 500 Batu Granit', cost: 100, currency: 'gameCoins', icon: 'stone_100', desc: 'Batu tambang kokoh untuk memperkuat bangunan dan benteng' },
+      { id: 'iron_100', name: 'Paket 250 Besi Tempa', cost: 150, currency: 'gameCoins', icon: 'iron_100', desc: 'Besi murni berkualitas tinggi untuk persenjataan perang' },
+      { id: 'wheat_100', name: 'Karung Gandum Panen', cost: 80, currency: 'gameCoins', icon: 'wheat_100', desc: 'Pasokan makanan melimpah untuk melatih prajurit tempur' },
+      { id: 'meat_100', name: 'Daging Panggang Kalori Tinggi', cost: 120, currency: 'gameCoins', icon: 'meat_100', desc: 'Santapan bergizi penambah stamina kerja seluruh warga' }
+    ],
+    gems: [
+      { id: 'shard_ruby', name: 'Permata Rubik Darah', cost: 300, currency: 'dungeonCoins', icon: 'shard_ruby', desc: 'Batu kristal sakti untuk meningkatkan status komandan' },
+      { id: 'shard_sapphire', name: 'Kristal Safir Samudera', cost: 450, currency: 'dungeonCoins', icon: 'shard_sapphire', desc: 'Kristal berharga untuk mempercepat kemajuan riset kosmik' },
+      { id: 'shard_emerald', name: 'Zamrud Hijau Kemakmuran', cost: 600, currency: 'dungeonCoins', icon: 'shard_emerald', desc: 'Permata langka pemicu berkah produksi harian peradaban' },
+      { id: 'ai_core', name: 'Quantum AI Core Singularity', cost: 2500, currency: 'dungeonCoins', icon: 'ai_core', desc: 'Komponen komputasi kuantum tercanggih era masa depan' }
+    ],
+    relics: [
+      { id: 'exp_scroll', name: 'Gulungan Taktik Perang', cost: 200, currency: 'gameCoins', icon: 'exp_scroll', desc: 'Tingkatkan level pahlawan komandan instan sebesar 1 tingkat' },
+      { id: 'golden_key', name: 'Kunci Peti Harta Karun', cost: 500, currency: 'dungeonCoins', icon: 'golden_key', desc: 'Buka peti dungeon kuno dengan jaminan drop persenjataan' },
+      { id: 'gold_pouch', name: 'Kantong 10.000 Emas Murni', cost: 400, currency: 'dungeonCoins', icon: 'gold_pouch', desc: 'Tukar koin dungeon menjadi pundi-pundi emas peradaban' }
+    ]
+  };
+
+  const currentItems = marketCatalog[activeCategory] || marketCatalog.potions;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Wallet Balance HUD */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        backgroundColor: 'rgba(30, 41, 59, 0.85)',
+        padding: '12px 14px',
+        borderRadius: '12px',
+        border: '1.5px solid rgba(255, 215, 0, 0.25)',
+        alignItems: 'center',
+        justifyContent: 'space-around'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '18px' }}>🪙</span>
+          <div>
+            <div style={{ fontSize: '10px', color: '#94A3B8' }}>Koin Dungeon</div>
+            <div style={{ fontSize: '14px', fontWeight: '900', color: '#FACC15' }}>
+              {formatNumber(state.dungeonCoins || 0)}
+            </div>
+          </div>
+        </div>
+        <div style={{ width: '1px', height: '24px', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '18px' }}>💰</span>
+          <div>
+            <div style={{ fontSize: '10px', color: '#94A3B8' }}>Koin Emas / Raid</div>
+            <div style={{ fontSize: '14px', fontWeight: '900', color: '#38BDF8' }}>
+              {formatNumber(state.gameCoins || 0)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Tabs */}
+      <div style={{ display: 'flex', gap: '6px' }}>
+        {categories.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => setActiveCategory(c.id)}
+            className={`btn-pixel ${activeCategory === c.id ? 'gold' : ''}`}
+            style={{ flex: 1, fontSize: '11px', padding: '7px 4px' }}
+          >
+            {c.icon} {c.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Items List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {currentItems.map((it) => {
+          const userBal = it.currency === 'dungeonCoins' ? (state.dungeonCoins || 0) : (state.gameCoins || 0);
+          const canAfford = userBal >= it.cost;
+          const currSymbol = it.currency === 'dungeonCoins' ? '🪙' : '💰';
+
+          return (
+            <div
+              key={it.id}
+              style={{
+                backgroundColor: 'rgba(30, 41, 59, 0.7)',
+                border: '1.5px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '12px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <ItemVisual id={it.icon} size={44} />
+                <div>
+                  <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
+                    {it.name}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#94A3B8' }}>
+                    {it.desc}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onBuyDungeonItem(it)}
+                disabled={!canAfford}
+                className={`btn-pixel ${canAfford ? 'gold' : ''}`}
+                style={{ fontSize: '11px', padding: '6px 14px', flexShrink: 0 }}
+              >
+                {currSymbol} {it.cost}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Panel Dedicated: Persenjataan & Armory Peradaban (12 Senjata & Zirah)
+export function EquipmentPanel({ state, onForgeWeapon }) {
+  const [filter, setFilter] = useState('all');
+
+  const filteredWeapons = ARMORY_WEAPONS.filter(w => {
+    if (filter === 'all') return true;
+    return w.type === filter;
+  });
+
+  const forgedCount = (state.forgedWeapons || []).length;
+  const totalBonusAtk = ARMORY_WEAPONS
+    .filter(w => (state.forgedWeapons || []).includes(w.id))
+    .reduce((sum, w) => sum + (w.atkBonus || 0), 0);
+  const totalBonusHp = ARMORY_WEAPONS
+    .filter(w => (state.forgedWeapons || []).includes(w.id))
+    .reduce((sum, w) => sum + (w.hpBonus || 0), 0);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* Equipment HUD Summary Card */}
+      <div style={{
+        backgroundColor: 'rgba(30, 41, 59, 0.85)',
+        borderRadius: '14px',
+        padding: '16px',
+        border: '1.5px solid rgba(255, 215, 0, 0.35)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h4 style={{ fontSize: '15px', color: '#FFD54F', margin: 0, fontWeight: '900' }}>
+              ⚔️ ARMORY &amp; PERSENJATAAN PERADABAN
+            </h4>
+            <span style={{ fontSize: '11px', color: '#94A3B8' }}>
+              Persenjataan: <strong>{forgedCount} / {ARMORY_WEAPONS.length} Ditempa</strong>
+            </span>
+          </div>
+          <div style={{
+            backgroundColor: 'rgba(15, 23, 42, 0.8)',
+            padding: '6px 12px',
+            borderRadius: '10px',
+            border: '1px solid #10B981',
+            color: '#10B981',
+            fontWeight: '800',
+            fontSize: '11px'
+          }}>
+            +{formatNumber(totalBonusAtk)} ATK • +{formatNumber(totalBonusHp)} HP
+          </div>
+        </div>
+
+        {/* 4 Equipment Visual Slots */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+          {[
+            { label: 'Senjata Utama', icon: '/assets/ic_wp_pedang.png' },
+            { label: 'Baju Zirah', icon: '/assets/ic_wp_baju_besi.png' },
+            { label: 'Jarak Jauh', icon: '/assets/ic_wp_musket.png' },
+            { label: 'Pamungkas', icon: '/assets/ic_wp_nano_kirana.png' }
+          ].map((slot, sIdx) => (
+            <div key={sIdx} style={{
+              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              borderRadius: '10px',
+              padding: '8px',
+              border: '1.5px solid rgba(255, 255, 255, 0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <img src={slot.icon} alt={slot.label} style={{ width: '32px', height: '32px', objectFit: 'contain', imageRendering: 'pixelated' }} />
+              <span style={{ fontSize: '9px', color: '#CBD5E1', textAlign: 'center', fontWeight: '700' }}>{slot.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
       <div style={{ display: 'flex', gap: '8px' }}>
-        <button
-          onClick={() => setSubMarket('dungeon')}
-          className={`btn-pixel ${subMarket === 'dungeon' ? 'gold' : ''}`}
-          style={{ flex: 1, fontSize: '12px' }}
-        >
-          💰 Toko Dungeon ({formatNumber(state.dungeonCoins)} 🪙)
+        <button onClick={() => setFilter('all')} className={`btn-pixel ${filter === 'all' ? 'gold' : ''}`} style={{ flex: 1, fontSize: '11px', padding: '6px' }}>
+          🌟 Semua ({ARMORY_WEAPONS.length})
         </button>
-        <button
-          onClick={() => setSubMarket('raid')}
-          className={`btn-pixel ${subMarket === 'raid' ? 'gold' : ''}`}
-          style={{ flex: 1, fontSize: '12px' }}
-        >
-          🪙 Toko Koin Raid ({formatNumber(state.gameCoins)} 🪙)
+        <button onClick={() => setFilter('senjata')} className={`btn-pixel ${filter === 'senjata' ? 'gold' : ''}`} style={{ flex: 1, fontSize: '11px', padding: '6px' }}>
+          ⚔️ Senjata ({ARMORY_WEAPONS.filter(w => w.type === 'senjata').length})
+        </button>
+        <button onClick={() => setFilter('armor')} className={`btn-pixel ${filter === 'armor' ? 'gold' : ''}`} style={{ flex: 1, fontSize: '11px', padding: '6px' }}>
+          🛡️ Zirah ({ARMORY_WEAPONS.filter(w => w.type === 'armor').length})
         </button>
       </div>
 
+      {/* Weapons & Armors List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {dungeonItems.map((it) => (
-          <div
-            key={it.id}
-            style={{
-              backgroundColor: 'rgba(30, 41, 59, 0.7)',
-              border: '1.5px solid rgba(255, 255, 255, 0.08)',
+        {filteredWeapons.map((w) => {
+          const isForged = (state.forgedWeapons || []).includes(w.id);
+          let canAfford = true;
+          for (const [resKey, amt] of Object.entries(w.cost)) {
+            if ((state[resKey] || 0) < amt) { canAfford = false; break; }
+          }
+
+          return (
+            <div key={w.id} style={{
+              backgroundColor: isForged ? 'rgba(6, 95, 70, 0.25)' : 'rgba(30, 41, 59, 0.65)',
+              border: `1.5px solid ${isForged ? '#10B981' : 'rgba(255, 255, 255, 0.08)'}`,
               borderRadius: '12px',
-              padding: '12px',
+              padding: '12px 14px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(15, 23, 42, 0.85)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1.5px solid rgba(255, 255, 255, 0.1)',
-                overflow: 'hidden',
-                flexShrink: 0
-              }}>
-                <ItemVisual id={it.id} size={38} />
+              justifyContent: 'space-between',
+              gap: '12px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <ArmoryVisual id={w.id} size={46} />
+                <div>
+                  <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
+                    {w.name}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>
+                    +{formatNumber(w.atkBonus)} ATK • +{formatNumber(w.hpBonus)} HP
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#FCD34D' }}>
+                    Biaya: {Object.entries(w.cost).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                  </div>
+                </div>
               </div>
+
               <div>
-                <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>{it.name}</div>
-                <div style={{ fontSize: '10px', color: '#94A3B8' }}>{it.desc}</div>
+                {isForged ? (
+                  <span style={{
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    color: '#10B981',
+                    border: '1px solid #10B981',
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: '800'
+                  }}>
+                    ✓ Ditempa &amp; Aktif
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => onForgeWeapon(w)}
+                    disabled={!canAfford}
+                    className={`btn-pixel ${canAfford ? 'gold' : ''}`}
+                    style={{ fontSize: '11px', padding: '6px 14px' }}
+                  >
+                    🔨 Tempa
+                  </button>
+                )}
               </div>
             </div>
-
-            <button
-              onClick={() => onBuyDungeonItem(it)}
-              disabled={state.dungeonCoins < it.cost}
-              className={`btn-pixel ${state.dungeonCoins >= it.cost ? 'gold' : ''}`}
-              style={{ fontSize: '11px', padding: '6px 12px' }}
-            >
-              Beli ({it.cost} Koin)
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

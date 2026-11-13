@@ -1,44 +1,61 @@
 import React from 'react';
 
 /**
- * Authentic Pixel-Art Visual Generator for all 12 Armory Weapons & Armors
- * Uses real sliced PNG weapon/armor icons from Raven Fantasy Icons!
+ * High-End Authentic Pixel-Art Visual Generator for Weapons & Armors
+ * Directly uses dedicated authentic equipment PNG icons!
  */
-export default function ArmoryVisual({ id, size = 40, style = {} }) {
+export default function ArmoryVisual({ id, size = 42, style = {} }) {
   const weaponIcons = {
-    tongkat_kayu: '/assets/sliced/items/fa100.png',
-    kulit_hewan: '/assets/sliced/items/fa101.png',
-    pedang_besi: '/assets/sliced/items/fa102.png',
-    armor_besi: '/assets/sliced/items/fa103.png',
-    musket: '/assets/sliced/items/fa104.png',
-    assault_rifle: '/assets/sliced/items/fa105.png',
-    railgun: '/assets/sliced/items/fa106.png',
-    exosuit: '/assets/sliced/items/fa107.png',
-    laser_blade: '/assets/sliced/items/fa108.png',
-    plasma_cannon: '/assets/sliced/items/fa109.png',
-    cyber_body: '/assets/sliced/items/fa110.png',
-    nano_kirana: '/assets/sliced/items/fa111.png'
+    tongkat_kayu: '/assets/ic_wp_tombak.png',
+    kulit_hewan: '/assets/ic_wp_armor_kulit.png',
+    pedang_besi: '/assets/ic_wp_pedang.png',
+    armor_besi: '/assets/ic_wp_baju_besi.png',
+    musket: '/assets/ic_wp_musket.png',
+    assault_rifle: '/assets/ic_wp_assault_rifle.png',
+    railgun: '/assets/ic_wp_railgun.png',
+    exosuit: '/assets/ic_wp_exosuit.png',
+    laser_blade: '/assets/ic_wp_laser_blade.png',
+    plasma_cannon: '/assets/ic_wp_plasma_cannon.png',
+    cyber_body: '/assets/ic_wp_cyber_body.png',
+    nano_kirana: '/assets/ic_wp_nano_kirana.png'
   };
 
-  const realSrc = weaponIcons[id];
+  const realSrc = weaponIcons[id] || (id && id.startsWith('/assets') ? id : null);
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: size,
+      height: size,
+      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+      borderRadius: '8px',
+      border: '1.5px solid rgba(255, 215, 0, 0.25)',
+      overflow: 'hidden',
+      flexShrink: 0,
+      ...style
+    }}>
       {realSrc ? (
         <img
           src={realSrc}
           alt={id}
           width={size}
           height={size}
-          style={{ imageRendering: 'pixelated', objectFit: 'contain', ...style }}
+          style={{
+            imageRendering: 'pixelated',
+            objectFit: 'contain',
+            width: '100%',
+            height: '100%',
+            padding: '2px'
+          }}
           onError={(e) => {
-            e.target.style.display = 'none';
+            // Safe fallback if specific icon fails
+            e.target.src = '/assets/ic_wp_pedang.png';
           }}
         />
       ) : (
-        <svg viewBox="0 0 40 40" width={size} height={size}>
-          <circle cx="20" cy="20" r="14" fill="#3B82F6" />
-        </svg>
+        <span style={{ fontSize: `${Math.round(size * 0.55)}px` }}>⚔️</span>
       )}
     </div>
   );

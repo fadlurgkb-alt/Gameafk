@@ -283,68 +283,61 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       const heroBaseX = isSlashing ? sim.heroX + 25 : (isHurt ? sim.heroX - 10 : sim.heroX);
       const heroBob = Math.sin(sim.tick * 0.2) * 2;
       const heroColorFlash = isHurt ? '#EF4444' : null;
+      const walkFrame = Math.floor((sim.tick * 0.14) % 4);
 
-      // Accompanying Spearman in back
+      // Accompanying Spearman in back (Real animated soldier)
       const spX = heroBaseX - 55;
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.fillRect(spX - 6, groundY - 2, 16, 4);
-      ctx.fillStyle = heroColorFlash || '#EF4444'; // Red soldier tunic
-      ctx.fillRect(spX - 5, groundY - 26 + heroBob, 12, 14);
-      ctx.fillStyle = '#FED7AA'; // Head
-      ctx.fillRect(spX - 3, groundY - 34 + heroBob, 8, 8);
-      ctx.fillStyle = '#475569'; // Helmet
-      ctx.fillRect(spX - 4, groundY - 36 + heroBob, 10, 4);
-      ctx.fillStyle = '#CBD5E1'; // Spear
-      ctx.fillRect(spX + 8, groundY - 42 + heroBob, 2, 28);
-
-      // Accompanying Archer in back
-      const arX = heroBaseX - 32;
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.fillRect(arX - 6, groundY - 2, 16, 4);
-      ctx.fillStyle = heroColorFlash || '#10B981'; // Green archer tunic
-      ctx.fillRect(arX - 5, groundY - 24 + heroBob, 12, 12);
-      ctx.fillStyle = '#FED7AA';
-      ctx.fillRect(arX - 3, groundY - 32 + heroBob, 8, 8);
-      ctx.fillStyle = '#F59E0B'; // Bow
       ctx.beginPath();
-      ctx.arc(arX + 10, groundY - 26 + heroBob, 8, -Math.PI / 2, Math.PI / 2);
-      ctx.strokeStyle = '#F59E0B';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Main Commander Hero (Frontline)
-      const realHeroImg = getCachedImage(GAME_ASSETS.farmerHero);
-      ctx.fillStyle = 'rgba(0,0,0,0.45)';
-      ctx.beginPath();
-      ctx.ellipse(heroBaseX + 4, groundY - 2, 16, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(spX + 12, groundY - 2, 12, 4, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      if (realHeroImg) {
+      const spImg = getCachedImage(GAME_ASSETS['soldier' + walkFrame]);
+      if (spImg) {
+        ctx.drawImage(spImg, spX, groundY - 32 + heroBob, 26, 26);
+      } else {
+        ctx.fillStyle = heroColorFlash || '#EF4444';
+        ctx.fillRect(spX, groundY - 26 + heroBob, 12, 14);
+        ctx.fillStyle = '#FED7AA';
+        ctx.fillRect(spX + 2, groundY - 34 + heroBob, 8, 8);
+      }
+
+      // Accompanying Archer in back (Real animated ranger)
+      const arX = heroBaseX - 30;
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(arX + 12, groundY - 2, 12, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const arImg = getCachedImage(GAME_ASSETS['archer' + walkFrame]);
+      if (arImg) {
+        ctx.drawImage(arImg, arX, groundY - 32 + heroBob, 26, 26);
+      } else {
+        ctx.fillStyle = heroColorFlash || '#10B981';
+        ctx.fillRect(arX, groundY - 24 + heroBob, 12, 12);
+        ctx.fillStyle = '#FED7AA';
+        ctx.fillRect(arX + 2, groundY - 32 + heroBob, 8, 8);
+      }
+
+      // Main Commander Hero (Frontline King/Leader)
+      const leaderImg = getCachedImage(GAME_ASSETS['leader' + walkFrame]);
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath();
+      ctx.ellipse(heroBaseX + 14, groundY - 2, 16, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (leaderImg) {
         ctx.save();
         if (heroColorFlash) {
           ctx.filter = 'sepia(1) hue-rotate(300deg) saturate(5)';
         }
-        ctx.drawImage(realHeroImg, heroBaseX - 16, groundY - 44 + heroBob, 40, 40);
+        ctx.drawImage(leaderImg, heroBaseX - 2, groundY - 42 + heroBob, 36, 36);
         ctx.restore();
       } else {
-        // Hero Body Armor
         ctx.fillStyle = heroColorFlash || primaryHero.color || '#3B82F6';
         ctx.fillRect(heroBaseX - 8, groundY - 34 + heroBob, 18, 20);
-
-        // Royal Cloak
-        ctx.fillStyle = '#DC2626';
-        ctx.fillRect(heroBaseX - 12, groundY - 32 + heroBob, 5, 16);
-
-        // Hero Head & Crown
         ctx.fillStyle = '#FED7AA';
         ctx.fillRect(heroBaseX - 5, groundY - 44 + heroBob, 12, 11);
-        ctx.fillStyle = '#FACC15'; // Crown
-        ctx.fillRect(heroBaseX - 7, groundY - 48 + heroBob, 16, 5);
-        ctx.fillRect(heroBaseX + 1, groundY - 51 + heroBob, 4, 4);
-
-        // Eyes
-        ctx.fillStyle = '#0F172A';
-        ctx.fillRect(heroBaseX + 2, groundY - 40 + heroBob, 3, 3);
       }
 
       // Hero Sword & Golden Slash Arc
@@ -352,26 +345,26 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         ctx.strokeStyle = '#FACC15';
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(heroBaseX + 28, groundY - 34, 26, -Math.PI * 0.4, Math.PI * 0.4);
+        ctx.arc(heroBaseX + 34, groundY - 26, 28, -Math.PI * 0.4, Math.PI * 0.4);
         ctx.stroke();
 
         ctx.strokeStyle = '#FFFFFF';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(heroBaseX + 28, groundY - 34, 25, -Math.PI * 0.35, Math.PI * 0.35);
+        ctx.arc(heroBaseX + 34, groundY - 26, 27, -Math.PI * 0.35, Math.PI * 0.35);
         ctx.stroke();
 
         ctx.fillStyle = '#F8FAFC';
-        ctx.fillRect(heroBaseX + 12, groundY - 36, 26, 4);
+        ctx.fillRect(heroBaseX + 18, groundY - 28, 26, 4);
       } else {
         ctx.fillStyle = '#CBD5E1';
-        ctx.fillRect(heroBaseX + 10, groundY - 38 + heroBob, 4, 22);
+        ctx.fillRect(heroBaseX + 18, groundY - 30 + heroBob, 4, 18);
         ctx.fillStyle = '#FACC15';
-        ctx.fillRect(heroBaseX + 8, groundY - 24 + heroBob, 8, 3);
+        ctx.fillRect(heroBaseX + 16, groundY - 20 + heroBob, 8, 3);
       }
 
       // ======================================================================
-      // 3. PIXEL ART DUNGEON MONSTER (Rich Detail & Lunge Animations)
+      // 3. PIXEL ART DUNGEON MONSTER (Rich 100x100 Multi-Frame Sprite Animation!)
       // ======================================================================
       const bX = sim.bossX;
       const isBossHit = sim.bossHitTimer > 0;
@@ -379,112 +372,51 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
 
       const bossBob = Math.sin(sim.tick * 0.16) * 3;
       const flashColor = isBossHit ? '#FFFFFF' : null;
-      const isTelegraph = sim.bossAnim === 'telegraph';
+      const isStriking = sim.bossAnim === 'strike' || sim.bossAnim === 'lunge';
 
       // Boss Ground Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.beginPath();
-      ctx.ellipse(bX, groundY - 2, 34, 8, 0, 0, Math.PI * 2);
+      ctx.ellipse(bX + 8, groundY - 2, 42, 10, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Render Monster Sprite (Authentic Blood Monster if available)
-      const realMonsterImg = getCachedImage(GAME_ASSETS.bloodMonster);
-      if (realMonsterImg) {
+      // Check Boss Asset (Demon for level >= 6, Blood Monster for level < 6)
+      const isDemon = currentBoss.level >= 6;
+      let monsterSheetKey = isDemon ? 'demonIdle' : 'bloodMonsterIdle';
+      let frameCount = 6;
+
+      if (isBossHit) {
+        monsterSheetKey = isDemon ? 'demonHurt' : 'bloodMonsterHurt';
+        frameCount = 4;
+      } else if (isStriking) {
+        monsterSheetKey = isDemon ? 'demonAttack' : 'bloodMonsterAttack';
+        frameCount = isDemon ? 7 : 8;
+      }
+
+      const monsterSheet = getCachedImage(GAME_ASSETS[monsterSheetKey]);
+
+      if (monsterSheet) {
         ctx.save();
         if (flashColor) {
-          ctx.filter = 'brightness(2.5)';
+          ctx.filter = 'brightness(2.2)';
         }
-        // Draw Authentic High-End Monster Sprite (100x100)
-        ctx.drawImage(realMonsterImg, bX - 50, groundY - 85 + bossBob, 100, 100);
+
+        const animSpeed = isStriking ? 0.28 : (isBossHit ? 0.25 : 0.14);
+        const currentFrame = Math.floor((sim.tick * animSpeed) % frameCount);
+
+        // 100x100 sprite frame extraction
+        ctx.drawImage(
+          monsterSheet,
+          currentFrame * 100, 0, 100, 100, // source frame
+          bX - 55, groundY - 96 + bossBob, 115, 115 // dest on canvas
+        );
         ctx.restore();
-      } else if (currentBoss.level <= 1) {
-        // Savage Dire Wolf
-        ctx.fillStyle = flashColor || '#475569';
-        ctx.fillRect(bX - 22, groundY - 28 + bossBob, 38, 18);
-        ctx.fillRect(bX - 30, groundY - 38 + bossBob, 18, 18); // Head
-        // Ears & Snout
-        ctx.fillRect(bX - 28, groundY - 44 + bossBob, 5, 7);
-        ctx.fillRect(bX - 36, groundY - 28 + bossBob, 10, 8);
-        // Glowing Red Eyes
-        ctx.fillStyle = isTelegraph ? '#FDE047' : '#EF4444';
-        ctx.fillRect(bX - 26, groundY - 34 + bossBob, 4, 3);
-        // Sharp White Fangs
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(bX - 34, groundY - 21 + bossBob, 3, 4);
-      } else if (currentBoss.level <= 5) {
-        // Alpha Direwolf (Giant Crimson Wolf)
-        ctx.fillStyle = flashColor || '#DC2626';
-        ctx.fillRect(bX - 30, groundY - 40 + bossBob, 54, 26);
-        ctx.fillRect(bX - 42, groundY - 52 + bossBob, 26, 26);
-        // Spiked Back Fur
-        ctx.fillStyle = '#991B1B';
-        ctx.fillRect(bX - 20, groundY - 48 + bossBob, 8, 10);
-        ctx.fillRect(bX - 5, groundY - 48 + bossBob, 8, 10);
-        // Glowing Yellow Eyes
-        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#FDE047';
-        ctx.fillRect(bX - 36, groundY - 46 + bossBob, 5, 4);
-      } else if (currentBoss.level <= 10) {
-        // Goblin King with Crown & Spiked Club
-        ctx.fillStyle = flashColor || '#15803D';
-        ctx.fillRect(bX - 20, groundY - 44 + bossBob, 36, 32);
-        ctx.fillRect(bX - 16, groundY - 58 + bossBob, 28, 20); // Head
-        // Jagged Crown
-        ctx.fillStyle = '#FACC15';
-        ctx.fillRect(bX - 16, groundY - 64 + bossBob, 28, 6);
-        // Spiked Club in Hand
-        ctx.fillStyle = '#78350F';
-        ctx.fillRect(bX - 36, groundY - 52 + bossBob, 10, 36);
-        ctx.fillStyle = '#94A3B8';
-        ctx.fillRect(bX - 40, groundY - 56 + bossBob, 18, 12);
-        // Red Eyes
-        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#EF4444';
-        ctx.fillRect(bX - 10, groundY - 50 + bossBob, 4, 4);
-      } else if (currentBoss.level <= 15) {
-        // Orc Warlord with Battleaxe
-        ctx.fillStyle = flashColor || '#EA580C';
-        ctx.fillRect(bX - 26, groundY - 54 + bossBob, 48, 40);
-        ctx.fillRect(bX - 20, groundY - 72 + bossBob, 36, 24);
-        // Iron Horns Helm
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(bX - 24, groundY - 76 + bossBob, 44, 8);
-        ctx.fillRect(bX - 30, groundY - 84 + bossBob, 8, 14);
-        ctx.fillRect(bX + 18, groundY - 84 + bossBob, 8, 14);
-        // Massive Battleaxe
-        ctx.fillStyle = '#78350F';
-        ctx.fillRect(bX - 42, groundY - 70 + bossBob, 6, 52);
-        ctx.fillStyle = '#CBD5E1';
-        ctx.fillRect(bX - 54, groundY - 74 + bossBob, 24, 20);
-      } else if (currentBoss.level <= 30) {
-        // Two-Headed Ogre
-        ctx.fillStyle = flashColor || '#7C3AED';
-        ctx.fillRect(bX - 32, groundY - 64 + bossBob, 60, 48);
-        // Heads
-        ctx.fillRect(bX - 30, groundY - 82 + bossBob, 24, 22);
-        ctx.fillRect(bX + 4, groundY - 82 + bossBob, 24, 22);
-        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#FDE047';
-        ctx.fillRect(bX - 22, groundY - 74 + bossBob, 4, 4);
-        ctx.fillRect(bX + 12, groundY - 74 + bossBob, 4, 4);
       } else {
-        // Archdemon / Cosmic Titan
-        ctx.fillStyle = flashColor || '#991B1B';
-        ctx.fillRect(bX - 36, groundY - 78 + bossBob, 68, 62);
-        // Demonic Horns
-        ctx.fillStyle = '#1E1B4B';
-        ctx.fillRect(bX - 34, groundY - 96 + bossBob, 10, 22);
-        ctx.fillRect(bX + 22, groundY - 96 + bossBob, 10, 22);
-        // Flaming Wings
-        ctx.fillStyle = '#7F1D1D';
-        ctx.beginPath();
-        ctx.moveTo(bX + 28, groundY - 60 + bossBob);
-        ctx.lineTo(bX + 70, groundY - 90 + bossBob);
-        ctx.lineTo(bX + 50, groundY - 30 + bossBob);
-        ctx.closePath();
-        ctx.fill();
-        // Glowing Flaming Core
-        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#F59E0B';
-        ctx.beginPath();
-        ctx.arc(bX - 2, groundY - 48 + bossBob, 12, 0, Math.PI * 2);
-        ctx.fill();
+        // High-contrast clean fallback wolf/gargoyle
+        ctx.fillStyle = flashColor || '#DC2626';
+        ctx.fillRect(bX - 25, groundY - 45 + bossBob, 50, 40);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(bX - 20, groundY - 35 + bossBob, 6, 6);
       }
 
       // ======================================================================

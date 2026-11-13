@@ -355,41 +355,56 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
       }
 
       // ======================================================================
-      // 2. ENVIRONMENT OBJECTS (Pines, Campfire, Pasture Animals)
+      // 2. ENVIRONMENT OBJECTS (Rich Forest Pines, Farm Animals, Campfire)
       // ======================================================================
       const treePositions = [
-        { col: 1, row: 1 }, { col: 3, row: 2 }, { col: 10, row: 2 },
-        { col: 13, row: 3 }, { col: 24, row: 2 }, { col: 32, row: 2 },
-        { col: 33, row: 12 }, { col: 34, row: 18 }, { col: 31, row: 22 },
-        { col: 12, row: 22 }, { col: 2, row: 23 }, { col: 6, row: 23 }
+        // North Forest
+        { col: 1, row: 1, type: 0 }, { col: 3, row: 2, type: 1 }, { col: 5, row: 1, type: 2 },
+        { col: 8, row: 2, type: 3 }, { col: 10, row: 2, type: 4 }, { col: 12, row: 1, type: 0 },
+        { col: 20, row: 2, type: 1 }, { col: 23, row: 1, type: 2 }, { col: 25, row: 3, type: 3 },
+        // East Woodlands (Across River)
+        { col: 31, row: 1, type: 4 }, { col: 33, row: 2, type: 0 }, { col: 34, row: 4, type: 1 },
+        { col: 32, row: 8, type: 2 }, { col: 34, row: 11, type: 3 }, { col: 32, row: 15, type: 4 },
+        { col: 33, row: 18, type: 0 }, { col: 34, row: 21, type: 1 }, { col: 31, row: 24, type: 2 },
+        // South & Farm Groves
+        { col: 1, row: 21, type: 3 }, { col: 2, row: 24, type: 4 }, { col: 6, row: 23, type: 0 },
+        { col: 9, row: 24, type: 1 }, { col: 13, row: 23, type: 2 }, { col: 18, row: 23, type: 3 },
+        { col: 22, row: 24, type: 4 }
       ];
 
-      const windSway = Math.sin(tick * 0.04) * 2.5;
-      const realTreeImg = getCachedImage(GAME_ASSETS.tree);
+      const treeAssets = [
+        GAME_ASSETS.treeGreen,
+        GAME_ASSETS.treeAutumn,
+        GAME_ASSETS.treeGolden,
+        GAME_ASSETS.treeLush,
+        GAME_ASSETS.treePine
+      ];
+
+      const windSway = Math.sin(tick * 0.04) * 2;
 
       treePositions.forEach((pos) => {
         const tx = pos.col * TILE_SIZE;
         const ty = pos.row * TILE_SIZE;
 
         // Tree Shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
         ctx.beginPath();
-        ctx.ellipse(tx + 16, ty + 28, 14, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(tx + 16, ty + 36, 16, 7, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        if (realTreeImg) {
-          // Draw authentic real Maple Tree sprite!
-          ctx.drawImage(realTreeImg, tx - 4 + windSway * 0.5, ty - 16, 40, 48);
-        } else {
-          // Trunk
-          ctx.fillStyle = '#5C2D0C';
-          ctx.fillRect(tx + 13, ty + 18, 6, 12);
+        const tImgSrc = treeAssets[pos.type % treeAssets.length];
+        const realTreeImg = getCachedImage(tImgSrc);
 
-          // Multi-tier Pine Leaves
-          ctx.fillStyle = eraId === 'cyberpunk' ? '#0284C7' : '#15803D';
-          ctx.fillRect(tx + 2 + windSway, ty + 12, 28, 12);
-          ctx.fillStyle = eraId === 'cyberpunk' ? '#38BDF8' : '#22C55E';
-          ctx.fillRect(tx + 6 + (windSway * 1.3), ty + 2, 20, 10);
+        if (realTreeImg) {
+          ctx.drawImage(realTreeImg, tx - 2 + windSway * 0.4, ty - 12, 36, 52);
+        } else {
+          // Fallback Trunk & Foliage
+          ctx.fillStyle = '#5C2D0C';
+          ctx.fillRect(tx + 13, ty + 20, 6, 16);
+          ctx.fillStyle = '#15803D';
+          ctx.fillRect(tx + 2 + windSway, ty + 12, 28, 14);
+          ctx.fillStyle = '#22C55E';
+          ctx.fillRect(tx + 6 + windSway, ty + 2, 20, 12);
         }
       });
 
@@ -404,34 +419,51 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
       ctx.fillStyle = '#F59E0B';
       ctx.fillRect(fireX + 3, fireY - (flameH * 0.7) + 6, 6, flameH * 0.7);
 
-      // Animals Grazing
+      // Farm Pasture Animals (Real Cow & Chickens)
+      const cowImg = getCachedImage(GAME_ASSETS.cowBrown);
+      const chkImg = getCachedImage(GAME_ASSETS.chickenRed);
+
       animals.forEach((a) => {
         a.x += a.speed * a.dir;
         if (Math.abs(a.x - a.targetX) < 2) {
           a.dir *= -1;
           a.targetX = a.dir > 0 ? a.x + 40 : a.x - 40;
         }
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.fillRect(a.x, a.y + 10, 14, 4);
 
-        if (a.type === 'sheep') {
-          ctx.fillStyle = '#F8FAFC';
-          ctx.fillRect(a.x, a.y, 14, 10);
-          ctx.fillStyle = '#1E293B';
-          ctx.fillRect(a.dir > 0 ? a.x + 11 : a.x - 2, a.y + 2, 4, 5);
+        // Animal Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(a.x + 12, a.y + 16, 12, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        if (a.dir < 0) {
+          ctx.translate(a.x + 24, a.y);
+          ctx.scale(-1, 1);
+          if (a.type === 'sheep' && cowImg) {
+            ctx.drawImage(cowImg, 0, 0, 32, 24, 0, -4, 32, 24);
+          } else if (chkImg) {
+            ctx.drawImage(chkImg, 0, 0, 16, 16, 4, 2, 16, 16);
+          } else {
+            ctx.fillStyle = '#F8FAFC';
+            ctx.fillRect(0, 0, 16, 12);
+          }
         } else {
-          // Rabbit
-          ctx.fillStyle = '#CBD5E1';
-          ctx.fillRect(a.x, a.y + 3, 8, 7);
-          ctx.fillRect(a.x + 2, a.y, 3, 5);
+          if (a.type === 'sheep' && cowImg) {
+            ctx.drawImage(cowImg, 0, 0, 32, 24, a.x, a.y - 4, 32, 24);
+          } else if (chkImg) {
+            ctx.drawImage(chkImg, 0, 0, 16, 16, a.x + 4, a.y + 2, 16, 16);
+          } else {
+            ctx.fillStyle = '#F8FAFC';
+            ctx.fillRect(a.x, a.y, 16, 12);
+          }
         }
+        ctx.restore();
       });
 
       // ======================================================================
-      // 3. CITIZENS & PATROLLING SOLDIERS (Animated walk cycles)
+      // 3. CITIZENS & PATROLLING SOLDIERS (4-Frame Authentic Animated Walk Cycles!)
       // ======================================================================
-      const realHeroImg = getCachedImage(GAME_ASSETS.farmerHero);
-
       citizens.forEach((c) => {
         c.x += c.speed * c.dir;
         if (Math.abs(c.x - c.targetX) < 2) {
@@ -439,65 +471,56 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
           c.targetX = c.dir > 0 ? c.x + 60 : c.x - 60;
         }
 
-        const walkBounce = Math.abs(Math.sin(tick * 0.16)) * 2;
-        const legOffset = Math.sin(tick * 0.22) * 3;
+        const walkBounce = Math.abs(Math.sin(tick * 0.18)) * 2;
+        const frameIdx = Math.floor((tick * 0.12 + c.id) % 4);
+
+        // Pick specific character animation frame based on role
+        let troopAssetKey = 'soldier' + frameIdx;
+        if (c.role === 'guard') troopAssetKey = 'soldier' + frameIdx;
+        else if (c.role === 'warrior') troopAssetKey = 'archer' + frameIdx;
+        else if (c.role === 'leader') troopAssetKey = 'leader' + frameIdx;
+        else if (c.role === 'farmer' || c.role === 'worker') troopAssetKey = 'farmer' + frameIdx;
+
+        const troopImg = getCachedImage(GAME_ASSETS[troopAssetKey]);
 
         // Shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(c.x, c.y + 16, 14, 4);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(c.x + 12, c.y + 18, 10, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        if (realHeroImg) {
-          // Draw authentic real Chibi Hero sprite!
+        if (troopImg) {
           ctx.save();
           if (c.dir < 0) {
-            ctx.translate(c.x + 16, c.y - 8 - walkBounce);
+            ctx.translate(c.x + 24, c.y - walkBounce);
             ctx.scale(-1, 1);
-            ctx.drawImage(realHeroImg, -16, 0, 32, 32);
+            ctx.drawImage(troopImg, 0, 0, 24, 24);
           } else {
-            ctx.drawImage(realHeroImg, c.x, c.y - 8 - walkBounce, 32, 32);
+            ctx.drawImage(troopImg, c.x, c.y - walkBounce, 24, 24);
           }
           ctx.restore();
         } else {
-          // Legs
-          ctx.fillStyle = '#1E293B';
-          ctx.fillRect(c.x + 2 + legOffset, c.y + 12 - walkBounce, 3, 5);
-          ctx.fillRect(c.x + 7 - legOffset, c.y + 12 - walkBounce, 3, 5);
-
-          // Body Costume
+          // Clean procedural backup
           ctx.fillStyle = c.role === 'leader' ? '#FACC15'
             : c.role === 'guard' ? '#EF4444'
-            : c.role === 'warrior' ? '#F97316'
+            : c.role === 'warrior' ? '#10B981'
             : '#3B82F6';
-          ctx.fillRect(c.x + 1, c.y + 4 - walkBounce, 10, 9);
-
-          // Head
-          ctx.fillStyle = '#FBCFE8';
-          ctx.fillRect(c.x + 3, c.y - 2 - walkBounce, 6, 6);
-        }
-
-        // Leader Royal Cloak / Weapons
-        if (c.role === 'leader') {
-          ctx.fillStyle = '#DC2626'; // Red cape
-          ctx.fillRect(c.dir > 0 ? c.x - 2 : c.x + 9, c.y + 4 - walkBounce, 4, 8);
-          ctx.fillStyle = '#FACC15'; // Crown
-          ctx.fillRect(c.x + 2, c.y - 4 - walkBounce, 8, 3);
-        } else if (c.role === 'guard') {
-          // Spear
-          ctx.fillStyle = '#E2E8F0';
-          ctx.fillRect(c.x + (c.dir > 0 ? 12 : -2), c.y - 8 - walkBounce, 2, 20);
+          ctx.fillRect(c.x + 2, c.y + 4 - walkBounce, 12, 12);
+          ctx.fillStyle = '#FED7AA';
+          ctx.fillRect(c.x + 4, c.y - 2 - walkBounce, 8, 8);
         }
 
         // Friendly Speech Bubble
         if ((tick + c.id * 120) % 450 < 140 && c.talk) {
           ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-          ctx.fillRect(c.x - 24, c.y - 24, 68, 16);
+          ctx.fillRect(c.x - 24, c.y - 24, 76, 16);
           ctx.strokeStyle = '#FFD54F';
           ctx.lineWidth = 1;
-          ctx.strokeRect(c.x - 24, c.y - 24, 68, 16);
+          ctx.strokeRect(c.x - 24, c.y - 24, 76, 16);
 
           ctx.fillStyle = '#F8FAFC';
           ctx.font = '7px "Press Start 2P", monospace';
-          ctx.fillText(c.talk, c.x - 21, c.y - 13);
+          ctx.fillText(c.talk, c.x - 20, c.y - 13);
         }
       });
 

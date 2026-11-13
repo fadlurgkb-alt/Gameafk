@@ -7,8 +7,9 @@ export default function Tabs({ activeTab, onTabChange }) {
     { id: 'riset', label: 'Riset', icon: '🔬' },
     { id: 'filsafat', label: 'Filsafat', icon: '📜' },
     { id: 'komandan', label: 'Komandan', icon: '👥' },
-    { id: 'dungeon', label: 'Dungeon & Raid', icon: '🗺️' },
-    { id: 'market', label: 'Pasar', icon: '🏪' },
+    { id: 'armory', label: 'Peralatan', icon: '⚔️' },
+    { id: 'dungeon', label: 'Dungeon & Raid', icon: '🌀' },
+    { id: 'market', label: 'Toko Pasar', icon: '🏪' },
     { id: 'kamus', label: 'Kamus Max', icon: '📖' }
   ];
 

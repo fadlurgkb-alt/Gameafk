@@ -15,6 +15,7 @@ import {
   ResearchPanel,
   PhilosophyPanel,
   CommandersPanel,
+  EquipmentPanel,
   DungeonPanel,
   MarketPanel
 } from './components/TabPanels';
@@ -397,15 +398,35 @@ export default function App() {
     });
   };
 
-  // Buy Dungeon Item
+  // Buy Dungeon / Market Item
   const handleBuyDungeonItem = (item) => {
-    if (state.dungeonCoins < item.cost) return;
+    const isGameCoin = item.currency === 'gameCoins';
+    const balance = isGameCoin ? (state.gameCoins || 0) : (state.dungeonCoins || 0);
+    if (balance < item.cost) return;
+
+    sound.playUpgrade();
     setState((prev) => {
-      const updated = { ...prev, dungeonCoins: prev.dungeonCoins - item.cost };
+      const updated = {
+        ...prev,
+        dungeonCoins: isGameCoin ? prev.dungeonCoins : (prev.dungeonCoins || 0) - item.cost,
+        gameCoins: isGameCoin ? (prev.gameCoins || 0) - item.cost : prev.gameCoins
+      };
+
       if (item.id === 'hp_pot') updated.hpPotions = (prev.hpPotions || 0) + 1;
-      if (item.id === 'wood_100') updated.kayu = Math.min(prev.maxStorage, prev.kayu + 100);
-      if (item.id === 'stone_100') updated.batu = Math.min(prev.maxStorage, prev.batu + 100);
-      if (item.id === 'shard_r') updated.shard_r = prev.shard_r + 5;
+      if (item.id === 'mana_pot') updated.manaPotions = (prev.manaPotions || 0) + 1;
+      if (item.id === 'atk_pot') updated.atkPotions = (prev.atkPotions || 0) + 1;
+      if (item.id === 'regen_pot') updated.regenPotions = (prev.regenPotions || 0) + 1;
+      if (item.id === 'wood_100') updated.kayu = Math.min(prev.maxStorage, (prev.kayu || 0) + 500);
+      if (item.id === 'stone_100') updated.batu = Math.min(prev.maxStorage, (prev.batu || 0) + 500);
+      if (item.id === 'iron_100') updated.besi = Math.min(prev.maxStorage, (prev.besi || 0) + 250);
+      if (item.id === 'wheat_100') updated.gandum = Math.min(prev.maxStorage, (prev.gandum || 0) + 500);
+      if (item.id === 'meat_100') updated.daging = Math.min(prev.maxStorage, (prev.daging || 0) + 500);
+      if (item.id === 'shard_ruby' || item.id === 'shard_r') updated.shard_r = (prev.shard_r || 0) + 5;
+      if (item.id === 'shard_sapphire') updated.shard_sr = (prev.shard_sr || 0) + 3;
+      if (item.id === 'shard_emerald') updated.shard_ssr = (prev.shard_ssr || 0) + 1;
+      if (item.id === 'ai_core') updated.totalZenith = (prev.totalZenith || 0) + 50000;
+      if (item.id === 'exp_scroll') updated.gachaTickets = (prev.gachaTickets || 0) + 3;
+      if (item.id === 'gold_pouch') updated.emas = Math.min(prev.maxStorage, (prev.emas || 0) + 10000);
       return updated;
     });
   };
@@ -528,8 +549,9 @@ export default function App() {
                 {activeTab === 'riset' && '🔬 Pohon Riset & Bakat Kosmik'}
                 {activeTab === 'filsafat' && '📜 Mazhab Filosofi Peradaban'}
                 {activeTab === 'komandan' && '👥 Pasukan & 22 Komandan Perang'}
-                {activeTab === 'dungeon' && '🗺️ Arena Dungeon & Pertahanan Raid'}
-                {activeTab === 'market' && '🏪 Pasar & Perdagangan Kosmik'}
+                {activeTab === 'armory' && '⚔️ Persenjataan & Peralatan Tempur'}
+                {activeTab === 'dungeon' && '🌀 Arena Dungeon & Pertahanan Raid'}
+                {activeTab === 'market' && '🏪 Toko & Pasar Peradaban'}
                 {activeTab === 'kamus' && '📖 Kamus Panduan Kerajaan'}
               </h3>
               <button
@@ -570,6 +592,12 @@ export default function App() {
                   onForgeWeapon={handleForgeWeapon}
                   onCombineShards={handleCombineShards}
                   onToggleGarrison={handleToggleGarrison}
+                />
+              )}
+              {activeTab === 'armory' && (
+                <EquipmentPanel
+                  state={state}
+                  onForgeWeapon={handleForgeWeapon}
                 />
               )}
               {activeTab === 'dungeon' && (
