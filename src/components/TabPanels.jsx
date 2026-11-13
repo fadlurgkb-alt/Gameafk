@@ -1,25 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import {
   ALL_BUILDINGS,
-  ALL_RESEARCH,
   ALL_PHILOSOPHIES,
-  DUNGEON_MONSTERS,
+  ARMORY_WEAPONS,
   formatNumber,
   calculateBuildingCost
 } from '../gameState';
 
-// Panel 1: Bangunan (23 Bangunan Asli)
+import TalentTreeCanvas from './TalentTreeCanvas';
+import DungeonArena from './DungeonArena';
+
+// Panel 1: Bangunan (23 Bangunan)
 export function BuildingsPanel({ state, onUpgradeBuilding }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <div style={{
-        fontSize: '12px',
-        fontWeight: '800',
-        color: '#94A3B8',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-      }}>
+      <div style={{ fontSize: '12px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>
         Daftar Bangunan Peradaban ({ALL_BUILDINGS.length} Bangunan)
       </div>
 
@@ -28,7 +24,6 @@ export function BuildingsPanel({ state, onUpgradeBuilding }) {
         const cost = calculateBuildingCost(b, currentLvl);
         const isUnlocked = state.unlockedNodes.includes(b.id);
 
-        // Check if player has enough resources
         let canAfford = true;
         for (const [resKey, amount] of Object.entries(cost)) {
           if ((state[resKey] || 0) < amount) {
@@ -105,7 +100,7 @@ export function BuildingsPanel({ state, onUpgradeBuilding }) {
               paddingTop: '6px',
               borderTop: '1px solid rgba(255, 255, 255, 0.06)'
             }}>
-              <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', gap: '8px', fontSize: '11px', flexWrap: 'wrap' }}>
                 <span style={{ color: '#94A3B8' }}>Biaya:</span>
                 {Object.entries(cost).map(([resKey, amount]) => {
                   const hasEnough = (state[resKey] || 0) >= amount;
@@ -133,282 +128,295 @@ export function BuildingsPanel({ state, onUpgradeBuilding }) {
   );
 }
 
-// Panel 2: Riset (26 Cabang Asli)
+// Panel 2: Talent Tree Riset
 export function ResearchPanel({ state, onUnlockResearch }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <div style={{
-        fontSize: '12px',
-        fontWeight: '800',
-        color: '#94A3B8',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-      }}>
-        Pohon Riset Teknologi & Kognitif ({ALL_RESEARCH.length} Cabang)
-      </div>
-
-      {ALL_RESEARCH.map((r) => {
-        const isUnlocked = state.unlockedNodes.includes(r.id);
-        const reqsMet = r.reqs.every((req) => state.unlockedNodes.includes(req));
-        const canAfford = state.totalZenith >= r.costZenith && reqsMet && !isUnlocked;
-
-        return (
-          <div
-            key={r.id}
-            style={{
-              backgroundColor: isUnlocked ? 'rgba(30, 41, 59, 0.7)' : 'rgba(15, 23, 42, 0.6)',
-              border: `1.5px solid ${isUnlocked ? 'rgba(74, 222, 128, 0.4)' : 'rgba(255, 255, 255, 0.06)'}`,
-              borderRadius: '12px',
-              padding: '12px 14px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-              opacity: isUnlocked || reqsMet ? 1 : 0.5
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>{r.icon}</span>
-                <span style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
-                  {r.name}
-                </span>
-                <span style={{
-                  fontSize: '10px',
-                  backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                  color: '#38BDF8',
-                  padding: '1px 6px',
-                  borderRadius: '4px'
-                }}>
-                  Tier {r.tier}
-                </span>
-              </div>
-
-              {isUnlocked && (
-                <span style={{ color: '#4ADE80', fontWeight: '800', fontSize: '11px' }}>
-                  ✓ Diteliti
-                </span>
-              )}
-            </div>
-
-            <p style={{ fontSize: '11px', color: '#94A3B8', margin: 0 }}>
-              {r.desc}
-            </p>
-
-            {!isUnlocked && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingTop: '6px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.06)'
-              }}>
-                <div style={{ fontSize: '11px', color: state.totalZenith >= r.costZenith ? '#FCD34D' : '#F87171' }}>
-                  Biaya: ✨ {formatNumber(r.costZenith)} Zenith
-                  {!reqsMet && <span style={{ color: '#F87171', marginLeft: '6px' }}>(Prasyarat belum)</span>}
-                </div>
-
-                <button
-                  onClick={() => onUnlockResearch(r)}
-                  disabled={!canAfford}
-                  className={`btn-pixel ${canAfford ? 'cyan' : ''}`}
-                  style={{ fontSize: '11px', padding: '5px 12px' }}
-                >
-                  Teliti Riset
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
+    <TalentTreeCanvas
+      state={state}
+      onUnlockResearch={onUnlockResearch}
+    />
   );
 }
 
-// Panel 3: Filsafat & Ideologi (10 Mazhab)
-export function PhilosophyPanel({ state, onAdoptPhilosophy }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <div style={{
-        fontSize: '12px',
-        fontWeight: '800',
-        color: '#94A3B8',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-      }}>
-        10 Mazhab Filsafat & Doktrin Negara
-      </div>
+// Panel 3: Komandan & Armory Tempa Senjata (22 Komandan & 12 Senjata)
+export function CommandersPanel({ state, onOpenGacha, onForgeWeapon, onCombineShards, onToggleGarrison }) {
+  const [subTab, setSubTab] = useState('heroes'); // 'heroes' | 'armory' | 'shards'
 
-      {ALL_PHILOSOPHIES.map((p) => {
-        const isAdopted = state.unlockedNodes.includes(p.id);
-        const canAfford = state.totalZenith >= p.costZenith && !isAdopted;
-
-        return (
-          <div
-            key={p.id}
-            style={{
-              backgroundColor: isAdopted ? 'rgba(76, 29, 149, 0.3)' : 'rgba(15, 23, 42, 0.6)',
-              border: `1.5px solid ${isAdopted ? '#A855F7' : 'rgba(255, 255, 255, 0.06)'}`,
-              borderRadius: '12px',
-              padding: '12px 14px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>{p.icon}</span>
-                <span style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
-                  {p.name}
-                </span>
-              </div>
-              {isAdopted && (
-                <span style={{ color: '#C084FC', fontWeight: '800', fontSize: '11px' }}>
-                  ✓ Doktrin Aktif
-                </span>
-              )}
-            </div>
-
-            <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>
-              Efek: {p.effect}
-            </div>
-
-            {!isAdopted && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingTop: '6px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.06)'
-              }}>
-                <span style={{ fontSize: '11px', color: state.totalZenith >= p.costZenith ? '#FCD34D' : '#F87171' }}>
-                  Biaya: ✨ {formatNumber(p.costZenith)} Zenith
-                </span>
-                <button
-                  onClick={() => onAdoptPhilosophy(p)}
-                  disabled={!canAfford}
-                  className={`btn-pixel ${canAfford ? 'purple' : ''}`}
-                  style={{ fontSize: '11px', padding: '5px 12px' }}
-                >
-                  Terapkan Doktrin
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// Panel 4: Komandan & Pahlawan
-export function CommandersPanel({ state, onGachaRecruit }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Tavern Gacha Header Card */}
       <div style={{
         backgroundColor: 'rgba(30, 41, 59, 0.8)',
-        borderRadius: '12px',
-        padding: '14px',
+        borderRadius: '14px',
+        padding: '14px 18px',
         border: '1.5px solid rgba(255, 179, 0, 0.3)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
         <div>
-          <h4 style={{ fontSize: '14px', color: '#FFD54F', margin: 0 }}>Kedai Pahlawan (Tavern)</h4>
-          <p style={{ fontSize: '11px', color: '#94A3B8', margin: '4px 0 0 0' }}>
-            Tiket Gacha: <strong>{state.gachaTickets}</strong> Tiket
-          </p>
+          <h4 style={{ fontSize: '15px', color: '#FFD54F', margin: 0, fontWeight: '900' }}>
+            🍻 KEDAI PAHLAWAN (TAVERN)
+          </h4>
+          <span style={{ fontSize: '11px', color: '#94A3B8' }}>
+            Tersedia: <strong>{state.gachaTickets}</strong> Tiket Panggilan Kosmis
+          </span>
         </div>
         <button
-          onClick={onGachaRecruit}
+          onClick={onOpenGacha}
           className="btn-pixel gold"
-          style={{ fontSize: '12px', padding: '8px 14px' }}
+          style={{ fontSize: '12px', padding: '8px 16px' }}
         >
-          🎲 Rekrut Pahlawan
+          🎲 Tarik Pahlawan (Gacha)
         </button>
       </div>
 
-      <div style={{
-        fontSize: '12px',
-        fontWeight: '800',
-        color: '#94A3B8',
-        textTransform: 'uppercase'
-      }}>
-        Daftar Pahlawan & Tokoh Bangsa
+      {/* Sub Tabs */}
+      <div style={{ display: 'flex', gap: '6px' }}>
+        <button
+          onClick={() => setSubTab('heroes')}
+          className={`btn-pixel ${subTab === 'heroes' ? 'cyan' : ''}`}
+          style={{ flex: 1, fontSize: '11px', padding: '6px' }}
+        >
+          👥 22 Pahlawan
+        </button>
+        <button
+          onClick={() => setSubTab('armory')}
+          className={`btn-pixel ${subTab === 'armory' ? 'cyan' : ''}`}
+          style={{ flex: 1, fontSize: '11px', padding: '6px' }}
+        >
+          ⚔️ Tempa Senjata & Armor
+        </button>
+        <button
+          onClick={() => setSubTab('shards')}
+          className={`btn-pixel ${subTab === 'shards' ? 'cyan' : ''}`}
+          style={{ flex: 1, fontSize: '11px', padding: '6px' }}
+        >
+          💎 Peleburan Shard
+        </button>
       </div>
 
-      {state.commanders.map((cmd) => (
-        <div
-          key={cmd.id}
-          style={{
-            backgroundColor: cmd.owned ? 'rgba(30, 41, 59, 0.7)' : 'rgba(15, 23, 42, 0.5)',
-            border: `1.5px solid ${cmd.owned ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.04)'}`,
-            borderRadius: '12px',
-            padding: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            opacity: cmd.owned ? 1 : 0.55
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '28px' }}>{cmd.icon}</span>
-            <div>
-              <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
-                {cmd.name}
-              </div>
-              <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>
-                {cmd.bonus}
-              </div>
-              <div style={{ fontSize: '10px', color: '#FCD34D' }}>
-                {'⭐'.repeat(cmd.stars || 1)} • Rarity: {cmd.rarity}
-              </div>
-            </div>
-          </div>
+      {/* SubTab 1: Heroes Grid */}
+      {subTab === 'heroes' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {state.commanders.map((cmd) => {
+            const isGarrisoned = state.garrisonedHeroes.includes(cmd.name);
 
-          <div>
-            {cmd.owned ? (
-              <span style={{
-                backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                color: '#4ADE80',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '800'
-              }}>
-                Aktif (Lv. {cmd.level})
-              </span>
-            ) : (
-              <span style={{
-                backgroundColor: 'rgba(100, 116, 139, 0.2)',
-                color: '#94A3B8',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                fontSize: '11px'
-              }}>
-                Belum Direkrut
-              </span>
-            )}
-          </div>
+            return (
+              <div
+                key={cmd.id}
+                style={{
+                  backgroundColor: cmd.owned ? 'rgba(30, 41, 59, 0.7)' : 'rgba(15, 23, 42, 0.5)',
+                  border: `1.5px solid ${cmd.owned ? cmd.color : 'rgba(255, 255, 255, 0.05)'}`,
+                  borderRadius: '12px',
+                  padding: '12px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  opacity: cmd.owned ? 1 : 0.55
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    fontSize: '26px',
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '50%',
+                    backgroundColor: cmd.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '2px solid rgba(255,255,255,0.2)'
+                  }}>
+                    {cmd.icon}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
+                      {cmd.name}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>
+                      {cmd.bonus}
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#CBD5E1' }}>
+                      {'⭐'.repeat(cmd.stars || 1)} • Skill: {cmd.skill}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  {cmd.owned ? (
+                    <button
+                      onClick={() => onToggleGarrison(cmd.name)}
+                      className={`btn-pixel ${isGarrisoned ? 'gold' : ''}`}
+                      style={{ fontSize: '11px', padding: '6px 10px' }}
+                    >
+                      {isGarrisoned ? '🛡️ Menjaga Gerbang' : 'Tugaskan Jaga'}
+                    </button>
+                  ) : (
+                    <span style={{
+                      backgroundColor: 'rgba(100, 116, 139, 0.2)',
+                      color: '#94A3B8',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      fontSize: '11px'
+                    }}>
+                      Belum Direkrut
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      )}
+
+      {/* SubTab 2: Armory Tempa Senjata */}
+      {subTab === 'armory' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {ARMORY_WEAPONS.map((w) => {
+            const isForged = state.forgedWeapons.includes(w.id);
+
+            let canAfford = true;
+            for (const [resKey, amt] of Object.entries(w.cost)) {
+              if ((state[resKey] || 0) < amt) {
+                canAfford = false;
+                break;
+              }
+            }
+
+            return (
+              <div
+                key={w.id}
+                style={{
+                  backgroundColor: isForged ? 'rgba(6, 95, 70, 0.25)' : 'rgba(30, 41, 59, 0.6)',
+                  border: `1.5px solid ${isForged ? '#10B981' : 'rgba(255, 255, 255, 0.08)'}`,
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img
+                    src={w.img}
+                    alt={w.name}
+                    style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
+                      {w.name}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>
+                      +{formatNumber(w.atkBonus)} Attack • +{formatNumber(w.hpBonus)} HP
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#FCD34D' }}>
+                      Biaya: {Object.entries(w.cost).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  {isForged ? (
+                    <span style={{ color: '#10B981', fontWeight: '800', fontSize: '11px' }}>✓ Ditempa</span>
+                  ) : (
+                    <button
+                      onClick={() => onForgeWeapon(w)}
+                      disabled={!canAfford}
+                      className={`btn-pixel ${canAfford ? 'gold' : ''}`}
+                      style={{ fontSize: '11px', padding: '6px 12px' }}
+                    >
+                      Tempa Senjata
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* SubTab 3: Shard Combine */}
+      {subTab === 'shards' && (
+        <div style={{
+          backgroundColor: 'rgba(30, 41, 59, 0.7)',
+          borderRadius: '12px',
+          padding: '16px',
+          border: '1.5px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          <h4 style={{ color: '#FFD54F', margin: 0, fontSize: '14px' }}>💎 Peleburan Token Shard</h4>
+          <p style={{ fontSize: '11px', color: '#94A3B8', margin: 0 }}>
+            Kumpulkan dan lebur shard untuk memanggil komandan langka (Rare, SR, SSR, UR).
+          </p>
+
+          <ShardRow
+            label="Rare Shard"
+            count={state.shard_r}
+            needed={20}
+            onCombine={() => onCombineShards('r', 20)}
+          />
+          <ShardRow
+            label="SR Shard"
+            count={state.shard_sr}
+            needed={50}
+            onCombine={() => onCombineShards('sr', 50)}
+          />
+          <ShardRow
+            label="SSR Shard"
+            count={state.shard_ssr}
+            needed={100}
+            onCombine={() => onCombineShards('ssr', 100)}
+          />
+          <ShardRow
+            label="UR Mythical Shard"
+            count={state.shard_ur}
+            needed={150}
+            onCombine={() => onCombineShards('ur', 150)}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-// Panel 5: Dungeon & Raid (Pertempuran & Bos)
-export function DungeonRaidPanel({ state, onAttackMonster, onDefendRaid, onToggleAutoFarm }) {
-  const currentMonster = DUNGEON_MONSTERS.find((m) => m.level === state.currentDungeonLevel)
-    || DUNGEON_MONSTERS[0];
+function ShardRow({ label, count, needed, onCombine }) {
+  const canCombine = count >= needed;
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: 'rgba(15, 23, 42, 0.6)',
+      padding: '10px 14px',
+      borderRadius: '8px'
+    }}>
+      <span style={{ fontSize: '12px', color: '#F8FAFC', fontWeight: '700' }}>
+        {label}: <strong style={{ color: '#38BDF8' }}>{count}/{needed}</strong>
+      </span>
+      <button
+        onClick={onCombine}
+        disabled={!canCombine}
+        className={`btn-pixel ${canCombine ? 'gold' : ''}`}
+        style={{ fontSize: '11px', padding: '4px 10px' }}
+      >
+        💥 Combine Pahlawan
+      </button>
+    </div>
+  );
+}
 
+// Panel 4: Dungeon & Raid (Arena Tempur Pixel Chibi 60 FPS)
+export function DungeonPanel({ state, onAttackBoss, onDefendRaid, onToggleAutoFarm }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {/* Raid Banner */}
+      {/* Raid Defense Alert Banner */}
       <div style={{
         backgroundColor: 'rgba(220, 38, 38, 0.15)',
         border: '1.5px solid #EF4444',
-        borderRadius: '12px',
+        borderRadius: '14px',
         padding: '14px',
         display: 'flex',
         flexDirection: 'column',
@@ -418,122 +426,66 @@ export function DungeonRaidPanel({ state, onAttackMonster, onDefendRaid, onToggl
           <span style={{ fontWeight: '800', fontSize: '14px', color: '#FCA5A5', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>⚔️</span> Serangan Raid Musuh (Gelombang #{state.raidLevel})
           </span>
-          <span style={{
-            fontFamily: '"Press Start 2P", monospace',
-            fontSize: '11px',
-            color: '#FCD34D'
-          }}>
+          <span style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '11px', color: '#FCD34D' }}>
             ⏱️ {state.raidTimer}s
           </span>
         </div>
         <p style={{ fontSize: '11px', color: '#CBD5E1', margin: 0 }}>
-          Musuh sedang mendekati gerbang kota! Siapkan pasukan jaga dan pahlawan untuk menangkis serbuan.
+          Musuh bergerak mendekati gerbang benteng! Prajurit jaga: <strong>{state.garrisonedPasukan} Prajurit</strong>.
         </p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-          <span style={{ fontSize: '11px', color: '#94A3B8' }}>
-            Prajurit Gerbang: <strong>{state.garrisonedPasukan} Prajurit</strong>
-          </span>
-          <button onClick={onDefendRaid} className="btn-pixel gold" style={{ fontSize: '11px', padding: '6px 12px' }}>
-            🛡️ Hadang Raid (+{formatNumber(state.gameCoins + 50)} Koin)
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+          <button onClick={onDefendRaid} className="btn-pixel gold" style={{ fontSize: '11px', padding: '6px 14px' }}>
+            🛡️ Hadang Raid (+250 Koin Pertahanan)
           </button>
         </div>
       </div>
 
-      {/* Dungeon Section */}
-      <div style={{
-        backgroundColor: 'rgba(30, 41, 59, 0.7)',
-        border: '1.5px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '12px',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        textAlign: 'center'
-      }}>
-        <span style={{ fontSize: '36px' }}>{currentMonster.icon}</span>
-        <div>
-          <h4 style={{ fontSize: '15px', color: '#F8FAFC', margin: 0 }}>
-            {currentMonster.name} (Lantai {state.currentDungeonLevel})
-          </h4>
-          <span style={{ fontSize: '11px', color: currentMonster.isBoss ? '#EF4444' : '#38BDF8', fontWeight: '800' }}>
-            {currentMonster.isBoss ? '👑 ELITE BOS DUNGEON' : 'Monster Liar'}
-          </span>
-        </div>
-
-        {/* Monster HP Bar */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
-            <span style={{ color: '#94A3B8' }}>HP Monster:</span>
-            <strong style={{ color: '#F87171' }}>
-              {formatNumber(state.monsterHp)} / {formatNumber(state.monsterMaxHp)}
-            </strong>
-          </div>
-          <div style={{
-            height: '10px',
-            backgroundColor: 'rgba(15, 23, 42, 0.8)',
-            borderRadius: '5px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              height: '100%',
-              width: `${Math.max(0, Math.min(100, (state.monsterHp / state.monsterMaxHp) * 100))}%`,
-              backgroundColor: '#EF4444',
-              transition: 'width 0.2s ease'
-            }} />
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={onAttackMonster}
-            className="btn-pixel gold"
-            style={{ flex: 1, padding: '10px', fontSize: '13px' }}
-          >
-            ⚔️ Serang Bos (-{formatNumber(state.damage * 10)} HP)
-          </button>
-          <button
-            onClick={onToggleAutoFarm}
-            className={`btn-pixel ${state.autoFarmDungeon ? 'green' : ''}`}
-            style={{ fontSize: '12px', padding: '10px 14px' }}
-          >
-            {state.autoFarmDungeon ? '🤖 Auto-Farm (ON)' : 'Auto-Farm (OFF)'}
-          </button>
-        </div>
-
-        <div style={{ fontSize: '11px', color: '#94A3B8' }}>
-          Koin Dungeon Terkumpul: <strong style={{ color: '#FCD34D' }}>{formatNumber(state.dungeonCoins)} 🪙</strong>
-        </div>
-      </div>
+      {/* Pixel Battle Arena Canvas */}
+      <DungeonArena
+        state={state}
+        onAttackBoss={onAttackBoss}
+        onToggleAutoFarm={onToggleAutoFarm}
+      />
     </div>
   );
 }
 
-// Panel 6: Pasar (Market) Barter Komoditas
-export function MarketPanel({ state, onTrade }) {
-  const trades = [
-    { from: 'kayu', fromQty: 100, to: 'besi', toQty: 25, label: 'Tukar 100 Kayu ➔ 25 Besi' },
-    { from: 'batu', fromQty: 100, to: 'emas', toQty: 10, label: 'Tukar 100 Batu ➔ 10 Emas' },
-    { from: 'daging', fromQty: 50, to: 'totalZenith', toQty: 500, label: 'Jual 50 Daging ➔ 500 Zenith' },
-    { from: 'gandum', fromQty: 80, to: 'roti', toQty: 40, label: 'Giling 80 Gandum ➔ 40 Roti' }
+// Panel 5: Pasar & Toko Dungeon / Raid
+export function MarketPanel({ state, onBuyDungeonItem }) {
+  const [subMarket, setSubMarket] = useState('dungeon'); // 'dungeon' | 'raid'
+
+  const dungeonItems = [
+    { id: 'hp_pot', name: 'Potion HP Lv.1', cost: 200, icon: '🧪', desc: 'Sembuhkan hero saat perang' },
+    { id: 'atk_pot', name: 'Potion Atk Lv.1', cost: 200, icon: '⚡', desc: 'Tambah daya serang hero' },
+    { id: 'wood_100', name: 'Paket 100 Kayu', cost: 200, icon: '🪵', desc: 'Bahan bangunan instan' },
+    { id: 'stone_100', name: 'Paket 100 Batu', cost: 200, icon: '🪨', desc: 'Bahan batu instan' },
+    { id: 'shard_r', name: 'Token Shard Rare', cost: 50, icon: '💎', desc: 'Panggil pahlawan unggul' },
+    { id: 'ai_core', name: 'Quantum AI Core', cost: 8000, icon: '🧠', desc: 'Komponen teknologi tinggi' }
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <div style={{
-        fontSize: '12px',
-        fontWeight: '800',
-        color: '#94A3B8',
-        textTransform: 'uppercase'
-      }}>
-        Pasar Komoditas & Barter Peradaban
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={() => setSubMarket('dungeon')}
+          className={`btn-pixel ${subMarket === 'dungeon' ? 'gold' : ''}`}
+          style={{ flex: 1, fontSize: '12px' }}
+        >
+          💰 Toko Dungeon ({formatNumber(state.dungeonCoins)} 🪙)
+        </button>
+        <button
+          onClick={() => setSubMarket('raid')}
+          className={`btn-pixel ${subMarket === 'raid' ? 'gold' : ''}`}
+          style={{ flex: 1, fontSize: '12px' }}
+        >
+          🪙 Toko Koin Raid ({formatNumber(state.gameCoins)} 🪙)
+        </button>
       </div>
 
-      {trades.map((tr, idx) => {
-        const canTrade = (state[tr.from] || 0) >= tr.fromQty;
-
-        return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {dungeonItems.map((it) => (
           <div
-            key={idx}
+            key={it.id}
             style={{
               backgroundColor: 'rgba(30, 41, 59, 0.7)',
               border: '1.5px solid rgba(255, 255, 255, 0.08)',
@@ -544,23 +496,80 @@ export function MarketPanel({ state, onTrade }) {
               justifyContent: 'space-between'
             }}
           >
-            <div>
-              <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
-                {tr.label}
-              </div>
-              <div style={{ fontSize: '11px', color: canTrade ? '#4ADE80' : '#F87171' }}>
-                Tersedia: {formatNumber(state[tr.from] || 0)} / {tr.fromQty}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '24px' }}>{it.icon}</span>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>{it.name}</div>
+                <div style={{ fontSize: '10px', color: '#94A3B8' }}>{it.desc}</div>
               </div>
             </div>
 
             <button
-              onClick={() => onTrade(tr)}
-              disabled={!canTrade}
-              className={`btn-pixel ${canTrade ? 'gold' : ''}`}
+              onClick={() => onBuyDungeonItem(it)}
+              disabled={state.dungeonCoins < it.cost}
+              className={`btn-pixel ${state.dungeonCoins >= it.cost ? 'gold' : ''}`}
               style={{ fontSize: '11px', padding: '6px 12px' }}
             >
-              Tukar
+              Beli ({it.cost} Koin)
             </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Panel 6: Filsafat & Doktrin (10 Mazhab)
+export function PhilosophyPanel({ state, onAdoptPhilosophy }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ fontSize: '12px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>
+        10 Mazhab Filsafat & Doktrin Peradaban
+      </div>
+
+      {ALL_PHILOSOPHIES.map((p) => {
+        const isAdopted = state.unlockedNodes.includes(p.id);
+        const canAfford = state.totalZenith >= p.costZenith && !isAdopted;
+
+        return (
+          <div
+            key={p.id}
+            style={{
+              backgroundColor: isAdopted ? 'rgba(76, 29, 149, 0.3)' : 'rgba(30, 41, 59, 0.6)',
+              border: `1.5px solid ${isAdopted ? '#A855F7' : 'rgba(255, 255, 255, 0.06)'}`,
+              borderRadius: '12px',
+              padding: '12px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <img
+                src={p.img}
+                alt={p.name}
+                style={{ width: '38px', height: '38px', objectFit: 'contain' }}
+              />
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>{p.name}</div>
+                <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>Efek: {p.effect}</div>
+              </div>
+            </div>
+
+            <div>
+              {isAdopted ? (
+                <span style={{ color: '#C084FC', fontWeight: '800', fontSize: '11px' }}>✓ Aktif</span>
+              ) : (
+                <button
+                  onClick={() => onAdoptPhilosophy(p)}
+                  disabled={!canAfford}
+                  className={`btn-pixel ${canAfford ? 'purple' : ''}`}
+                  style={{ fontSize: '11px', padding: '6px 12px' }}
+                >
+                  Terapkan ({formatNumber(p.costZenith)} Z)
+                </button>
+              )}
+            </div>
           </div>
         );
       })}

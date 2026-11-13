@@ -3,10 +3,8 @@ import confetti from 'canvas-confetti';
 import {
   INITIAL_GAME_STATE,
   ALL_BUILDINGS,
-  ALL_RESEARCH,
-  ALL_PHILOSOPHIES,
   DUNGEON_MONSTERS,
-  formatNumber
+  calculateCombatPower
 } from './gameState';
 
 import Header from './components/Header';
@@ -17,7 +15,7 @@ import {
   ResearchPanel,
   PhilosophyPanel,
   CommandersPanel,
-  DungeonRaidPanel,
+  DungeonPanel,
   MarketPanel
 } from './components/TabPanels';
 import {
@@ -26,8 +24,10 @@ import {
   GerbangModal,
   KamusMaxModal
 } from './components/Dialogs';
+import GachaModal from './components/GachaModal';
+import ProfileModal from './components/ProfileModal';
 
-const STORAGE_KEY = 'GENESIS_PIXEL_SAVE_V2';
+const STORAGE_KEY = 'GENESIS_PIXEL_SAVE_V3';
 
 export default function App() {
   const [state, setState] = useState(() => {
@@ -48,15 +48,17 @@ export default function App() {
   const [isHospitalOpen, setIsHospitalOpen] = useState(false);
   const [isGerbangOpen, setIsGerbangOpen] = useState(false);
   const [isKamusOpen, setIsKamusOpen] = useState(false);
+  const [isGachaOpen, setIsGachaOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // Calculate passive production rates
+  // Passive Zenith Rate calculation
   const zenithRate = ALL_BUILDINGS.reduce((sum, b) => {
     const lvl = state.buildingLevels[b.id] || (state.unlockedNodes.includes(b.id) ? 1 : 0);
     if (lvl <= 0) return sum;
     return sum + (b.zenithPerSec * lvl);
-  }, 5.0); // Base 5.0
+  }, 5.0);
 
-  // Main 1-Second Idle Game Loop
+  // 1-Second Idle Game Loop
   useEffect(() => {
     const loop = setInterval(() => {
       setState((prev) => {
@@ -74,7 +76,7 @@ export default function App() {
         let newGandum = prev.gandum;
         let newIkan = prev.ikan;
 
-        // Calculate building yields
+        // Building yields
         ALL_BUILDINGS.forEach((b) => {
           const lvl = prev.buildingLevels[b.id] || (prev.unlockedNodes.includes(b.id) ? 1 : 0);
           if (lvl > 0 && b.produces) {
@@ -94,14 +96,14 @@ export default function App() {
           }
         });
 
-        // Cap resources at maxStorage
+        // Cap resources
         const maxCap = prev.maxStorage;
         newKayu = Math.min(newKayu, maxCap);
         newBatu = Math.min(newBatu, maxCap);
         newBesi = Math.min(newBesi, maxCap);
         newEmas = Math.min(newEmas, maxCap);
 
-        // Raid Timer Countdown
+        // Raid Timer
         let newRaidTimer = prev.raidTimer - 1;
         let newRaidLevel = prev.raidLevel;
         let newGameCoins = prev.gameCoins;
@@ -109,7 +111,7 @@ export default function App() {
         if (newRaidTimer <= 0) {
           newRaidTimer = 180;
           newRaidLevel += 1;
-          newGameCoins += 150;
+          newGameCoins += 250;
         }
 
         // Auto Farm Dungeon
@@ -118,10 +120,10 @@ export default function App() {
         let newDungeonCoins = prev.dungeonCoins;
 
         if (prev.autoFarmDungeon) {
-          const dmg = prev.damage * 5;
+          const dmg = prev.damage * 6;
           newMonsterHp -= dmg;
           if (newMonsterHp <= 0) {
-            newDungeonCoins += 100;
+            newDungeonCoins += 120;
             newDungeonLevel = Math.min(100, newDungeonLevel + 1);
             const nextMon = DUNGEON_MONSTERS.find((m) => m.level === newDungeonLevel) || DUNGEON_MONSTERS[0];
             newMonsterHp = nextMon.hp;
@@ -156,7 +158,7 @@ export default function App() {
     return () => clearInterval(loop);
   }, [zenithRate]);
 
-  // Auto-Save to LocalStorage every 5s
+  // Auto-Save
   useEffect(() => {
     const saver = setInterval(() => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -168,7 +170,6 @@ export default function App() {
   const handleUpgradeBuilding = (building, cost) => {
     setState((prev) => {
       const updated = { ...prev };
-      // Deduct resources
       for (const [resKey, amount] of Object.entries(cost)) {
         updated[resKey] = Math.max(0, (updated[resKey] || 0) - amount);
       }
@@ -180,79 +181,126 @@ export default function App() {
       if (!updated.unlockedNodes.includes(building.id)) {
         updated.unlockedNodes = [...prev.unlockedNodes, building.id];
       }
-      if (building.id === 'gudang') {
-        updated.maxStorage += 500;
-      }
+      if (building.id === 'gudang') updated.maxStorage += 500;
       if (building.id === 'tembok') {
         updated.maxGerbangHp += 250;
         updated.gerbangHp += 250;
       }
-      if (building.id === 'barak_militer') {
-        updated.maxPasukan += 20;
-      }
-      confetti({ particleCount: 25, spread: 50, origin: { y: 0.8 } });
+      if (building.id === 'barak_militer') updated.maxPasukan += 20;
+      confetti({ particleCount: 25, spread: 50 });
       return updated;
     });
   };
 
   // Unlock Research
-  const handleUnlockResearch = (research) => {
-    if (state.totalZenith < research.costZenith) return;
+  const handleUnlockResearch = (node) => {
+    if (state.totalZenith < node.costZenith) return;
     setState((prev) => ({
       ...prev,
-      totalZenith: prev.totalZenith - research.costZenith,
-      unlockedNodes: [...prev.unlockedNodes, research.id]
+      totalZenith: prev.totalZenith - node.costZenith,
+      unlockedNodes: [...prev.unlockedNodes, node.id]
     }));
-    confetti({ particleCount: 40, spread: 70, origin: { y: 0.6 } });
+    confetti({ particleCount: 50, spread: 80 });
   };
 
   // Adopt Philosophy
-  const handleAdoptPhilosophy = (philosophy) => {
-    if (state.totalZenith < philosophy.costZenith) return;
+  const handleAdoptPhilosophy = (phil) => {
+    if (state.totalZenith < phil.costZenith) return;
     setState((prev) => ({
       ...prev,
-      totalZenith: prev.totalZenith - philosophy.costZenith,
-      unlockedNodes: [...prev.unlockedNodes, philosophy.id]
+      totalZenith: prev.totalZenith - phil.costZenith,
+      unlockedNodes: [...prev.unlockedNodes, phil.id]
     }));
-    confetti({ particleCount: 50, spread: 90, origin: { y: 0.5 } });
+    confetti({ particleCount: 60, spread: 90 });
   };
 
-  // Gacha Summon Commander
-  const handleGachaRecruit = () => {
+  // Gacha Result Callback
+  const handlePerformGacha = (pulledHero) => {
     setState((prev) => {
-      const unowned = prev.commanders.filter((c) => !c.owned);
-      if (unowned.length === 0) {
-        // Upgrade stars of existing commander
-        const upgraded = prev.commanders.map((c, i) => i === 0 ? { ...c, stars: (c.stars || 1) + 1 } : c);
-        confetti({ particleCount: 70, spread: 80 });
-        return { ...prev, commanders: upgraded };
-      }
-      const recruited = unowned[0];
-      const updated = prev.commanders.map((c) => c.id === recruited.id ? { ...c, owned: true, level: 1 } : c);
-      confetti({ particleCount: 100, spread: 100 });
+      const updatedCommanders = prev.commanders.map((c) => {
+        if (c.id === pulledHero.id) {
+          return {
+            ...c,
+            owned: true,
+            stars: c.owned ? (c.stars || 1) + 1 : 1
+          };
+        }
+        return c;
+      });
       return {
         ...prev,
-        commanders: updated,
+        commanders: updatedCommanders,
         gachaTickets: Math.max(0, prev.gachaTickets - 1)
       };
     });
   };
 
-  // Attack Dungeon Monster
-  const handleAttackMonster = () => {
+  // Forge Weapon
+  const handleForgeWeapon = (weapon) => {
+    setState((prev) => {
+      const updated = { ...prev };
+      for (const [resKey, amt] of Object.entries(weapon.cost)) {
+        updated[resKey] = Math.max(0, (updated[resKey] || 0) - amt);
+      }
+      updated.forgedWeapons = [...prev.forgedWeapons, weapon.id];
+      updated.damage += weapon.atkBonus;
+      confetti({ particleCount: 40, spread: 60 });
+      return updated;
+    });
+  };
+
+  // Shard Combine
+  const handleCombineShards = (type, needed) => {
+    const key = `shard_${type}`;
+    if ((state[key] || 0) < needed) return;
+    setState((prev) => {
+      // Unlock one commander matching rarity or upgrade star
+      const pool = prev.commanders.filter((c) => {
+        if (type === 'r') return c.rarity === 'R';
+        if (type === 'sr') return c.rarity === 'SR';
+        if (type === 'ssr') return c.rarity === 'SSR';
+        return c.rarity === 'Mythical';
+      });
+      const unowned = pool.filter((c) => !c.owned);
+      const target = unowned.length > 0 ? unowned[0] : pool[0];
+
+      const updated = prev.commanders.map((c) => c.id === target.id ? { ...c, owned: true, stars: (c.stars || 1) + 1 } : c);
+      confetti({ particleCount: 80, spread: 100 });
+      return {
+        ...prev,
+        [key]: prev[key] - needed,
+        commanders: updated
+      };
+    });
+  };
+
+  // Garrison Hero Toggle
+  const handleToggleGarrison = (heroName) => {
+    setState((prev) => {
+      const isAlready = prev.garrisonedHeroes.includes(heroName);
+      const nextHeroes = isAlready
+        ? prev.garrisonedHeroes.filter((h) => h !== heroName)
+        : [...prev.garrisonedHeroes, heroName];
+      return { ...prev, garrisonedHeroes: nextHeroes };
+    });
+  };
+
+  // Attack Dungeon Boss
+  const handleAttackBoss = () => {
     setState((prev) => {
       const dmg = prev.damage * 10;
       const nextHp = prev.monsterHp - dmg;
       if (nextHp <= 0) {
         const nextLvl = Math.min(100, prev.currentDungeonLevel + 1);
         const nextMon = DUNGEON_MONSTERS.find((m) => m.level === nextLvl) || DUNGEON_MONSTERS[0];
-        confetti({ particleCount: 60, spread: 80, origin: { y: 0.5 } });
+        confetti({ particleCount: 70, spread: 90 });
         return {
           ...prev,
           currentDungeonLevel: nextLvl,
           monsterHp: nextMon.hp,
           monsterMaxHp: nextMon.hp,
-          dungeonCoins: prev.dungeonCoins + 150
+          dungeonCoins: prev.dungeonCoins + 180,
+          shard_r: prev.shard_r + 5
         };
       }
       return { ...prev, monsterHp: nextHp };
@@ -262,40 +310,27 @@ export default function App() {
   // Defend Raid
   const handleDefendRaid = () => {
     setState((prev) => {
-      confetti({ particleCount: 80, spread: 110, origin: { y: 0.4 } });
+      confetti({ particleCount: 80, spread: 100 });
       return {
         ...prev,
         raidTimer: 180,
         raidLevel: prev.raidLevel + 1,
         gameCoins: prev.gameCoins + 250,
-        totalZenith: prev.totalZenith + 2000
+        totalZenith: prev.totalZenith + 2500
       };
     });
   };
 
-  // Heal All Troops
-  const handleHealAll = () => {
+  // Buy Dungeon Item
+  const handleBuyDungeonItem = (item) => {
+    if (state.dungeonCoins < item.cost) return;
     setState((prev) => {
-      const cost = prev.woundedPasukan * 2;
-      if (prev.berry < cost) return prev;
-      return {
-        ...prev,
-        berry: prev.berry - cost,
-        currentPasukan: prev.currentPasukan + prev.woundedPasukan,
-        woundedPasukan: 0
-      };
-    });
-  };
-
-  // Trade Market
-  const handleTrade = (tr) => {
-    setState((prev) => {
-      if ((prev[tr.from] || 0) < tr.fromQty) return prev;
-      return {
-        ...prev,
-        [tr.from]: prev[tr.from] - tr.fromQty,
-        [tr.to]: (prev[tr.to] || 0) + tr.toQty
-      };
+      const updated = { ...prev, dungeonCoins: prev.dungeonCoins - item.cost };
+      if (item.id === 'hp_pot') updated.hpPotions = (prev.hpPotions || 0) + 1;
+      if (item.id === 'wood_100') updated.kayu = Math.min(prev.maxStorage, prev.kayu + 100);
+      if (item.id === 'stone_100') updated.batu = Math.min(prev.maxStorage, prev.batu + 100);
+      if (item.id === 'shard_r') updated.shard_r = prev.shard_r + 5;
+      return updated;
     });
   };
 
@@ -303,7 +338,7 @@ export default function App() {
   const handleCanvasTap = () => {
     setState((prev) => ({
       ...prev,
-      totalZenith: prev.totalZenith + Math.max(1, Math.floor(zenithRate * 0.15) + 3)
+      totalZenith: prev.totalZenith + Math.max(2, Math.floor(zenithRate * 0.15) + 3)
     }));
   };
 
@@ -321,36 +356,28 @@ export default function App() {
       daging: prev.daging + 5000,
       berry: prev.berry + 5000,
       gandum: prev.gandum + 5000,
-      maxStorage: prev.maxStorage + 20000
+      gachaTickets: prev.gachaTickets + 20,
+      dungeonCoins: prev.dungeonCoins + 2000,
+      maxStorage: prev.maxStorage + 25000
     }));
     confetti({ particleCount: 80, spread: 100 });
   };
 
   // Max All Debug
   const handleMaxAll = () => {
-    const allUnlocked = [
-      ...ALL_BUILDINGS.map((b) => b.id),
-      ...ALL_RESEARCH.map((r) => r.id),
-      ...ALL_PHILOSOPHIES.map((p) => p.id)
-    ];
-    const maxLevels = {};
-    ALL_BUILDINGS.forEach((b) => {
-      maxLevels[b.id] = 10;
-    });
     setState((prev) => ({
       ...prev,
-      totalZenith: 50000000,
-      kayu: 100000,
-      batu: 100000,
-      besi: 50000,
-      emas: 50000,
-      oil: 50000,
-      listrik: 50000,
-      titanium: 50000,
-      uranium: 50000,
-      maxStorage: 500000,
-      unlockedNodes: allUnlocked,
-      buildingLevels: maxLevels,
+      totalZenith: 100000000,
+      kayu: 200000,
+      batu: 200000,
+      besi: 100000,
+      emas: 100000,
+      oil: 100000,
+      listrik: 100000,
+      titanium: 100000,
+      uranium: 100000,
+      maxStorage: 1000000,
+      gachaTickets: 100,
       commanders: prev.commanders.map((c) => ({ ...c, owned: true, stars: 3, level: 10 }))
     }));
     confetti({ particleCount: 150, spread: 130 });
@@ -364,14 +391,14 @@ export default function App() {
       backgroundColor: '#070A12',
       color: '#ECEFF1'
     }}>
-      {/* Top Header */}
+      {/* Header with Avatar & Combat Power */}
       <Header
         state={state}
         zenithRate={zenithRate}
         onOpenGudang={() => setIsGudangOpen(true)}
         onOpenHospital={() => setIsHospitalOpen(true)}
         onOpenGerbang={() => setIsGerbangOpen(true)}
-        onOpenStats={() => setIsKamusOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
         onGodMode={handleGodMode}
         onMaxAll={handleMaxAll}
       />
@@ -385,10 +412,10 @@ export default function App() {
         flexDirection: 'column',
         gap: '12px'
       }}>
-        {/* PETA RESPONSIF LEGA DI RUANG UTAMA */}
+        {/* PETA RESPONSIF LEGA DENGAN ZOOM & PAN */}
         <PixelCanvas state={state} onCanvasTap={handleCanvasTap} />
 
-        {/* Dynamic Tab Panel Views */}
+        {/* Tab Panel Views */}
         {activeTab === 'bangunan' && (
           <BuildingsPanel
             state={state}
@@ -410,13 +437,16 @@ export default function App() {
         {activeTab === 'komandan' && (
           <CommandersPanel
             state={state}
-            onGachaRecruit={handleGachaRecruit}
+            onOpenGacha={() => setIsGachaOpen(true)}
+            onForgeWeapon={handleForgeWeapon}
+            onCombineShards={handleCombineShards}
+            onToggleGarrison={handleToggleGarrison}
           />
         )}
         {activeTab === 'dungeon' && (
-          <DungeonRaidPanel
+          <DungeonPanel
             state={state}
-            onAttackMonster={handleAttackMonster}
+            onAttackBoss={handleAttackBoss}
             onDefendRaid={handleDefendRaid}
             onToggleAutoFarm={() => setState((p) => ({ ...p, autoFarmDungeon: !p.autoFarmDungeon }))}
           />
@@ -424,7 +454,7 @@ export default function App() {
         {activeTab === 'market' && (
           <MarketPanel
             state={state}
-            onTrade={handleTrade}
+            onBuyDungeonItem={handleBuyDungeonItem}
           />
         )}
         {activeTab === 'kamus' && (
@@ -436,16 +466,16 @@ export default function App() {
           }}>
             <h4 style={{ color: '#FFD54F', marginBottom: '8px' }}>📖 Panduan Peradaban & Deff</h4>
             <p style={{ fontSize: '12px', color: '#CBD5E1', lineHeight: '1.6' }}>
-              Selamat datang di Genesis Pixel: Idle Cosmos! Bangun peradaban dari satu percikan api hingga era Cyberpunk kosmis. Kelola 15+ rantai bahan pangan dan material, tugaskan ksatria di gerbang benteng untuk menahan serbuan raid musuh, rekrut pahlawan bintang di kedai, dan telusuri lantai-lantai dungeon mistis.
+              Kelola 22 komandan suku legendaris, tempa 12 persenjataan, kuasai 26 jejaring kosmis, dan pertahankan gerbang kota Anda dari gelombang raid musuh!
             </p>
           </div>
         )}
       </main>
 
-      {/* Bottom Tabs Switcher */}
+      {/* Bottom Tabs */}
       <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Interactive Dialogs */}
+      {/* Modals & Dialogs */}
       <GudangModal
         isOpen={isGudangOpen}
         onClose={() => setIsGudangOpen(false)}
@@ -456,7 +486,7 @@ export default function App() {
         isOpen={isHospitalOpen}
         onClose={() => setIsHospitalOpen(false)}
         state={state}
-        onHealAll={handleHealAll}
+        onHealAll={() => setState((p) => ({ ...p, currentPasukan: p.currentPasukan + p.woundedPasukan, woundedPasukan: 0 }))}
       />
       <GerbangModal
         isOpen={isGerbangOpen}
@@ -468,6 +498,18 @@ export default function App() {
         isOpen={isKamusOpen}
         onClose={() => setIsKamusOpen(false)}
         state={state}
+      />
+      <GachaModal
+        isOpen={isGachaOpen}
+        onClose={() => setIsGachaOpen(false)}
+        gachaTickets={state.gachaTickets}
+        onPerformGacha={handlePerformGacha}
+      />
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        state={state}
+        onSelectAvatar={(avatarId) => setState((p) => ({ ...p, avatarId }))}
       />
     </div>
   );

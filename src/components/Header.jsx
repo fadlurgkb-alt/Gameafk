@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatNumber } from '../gameState';
+import { formatNumber, calculateCombatPower } from '../gameState';
 
 export default function Header({
   state,
@@ -7,64 +7,91 @@ export default function Header({
   onOpenGudang,
   onOpenHospital,
   onOpenGerbang,
-  onOpenStats,
+  onOpenProfile,
   onGodMode,
   onMaxAll
 }) {
+  const totalCP = calculateCombatPower(state);
+  const activeAvatar = state.commanders.find((c) => c.id === state.avatarId)
+    || state.commanders[0];
+
   return (
     <header style={{
-      padding: '12px 14px',
-      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+      padding: '10px 14px',
+      backgroundColor: 'rgba(11, 15, 25, 0.96)',
       backdropFilter: 'blur(12px)',
       borderBottom: '1.5px solid rgba(255, 255, 255, 0.08)',
       display: 'flex',
       flexDirection: 'column',
-      gap: '10px'
+      gap: '8px'
     }}>
-      {/* Top Row: Brand & Quick Action Controls */}
+      {/* Top Bar: Profile, Combat Power, Debug Controls */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '22px' }}>🌌</span>
+        {/* Clickable Profile Card */}
+        <div
+          onClick={onOpenProfile}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(30, 41, 59, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            transition: 'background-color 0.15s ease'
+          }}
+          title="Buka Profil Penguasa & Ganti Avatar"
+        >
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            backgroundColor: activeAvatar.color || '#3B82F6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            border: '2px solid #FFD54F',
+            boxShadow: '0 0 10px rgba(255, 213, 79, 0.3)'
+          }}>
+            {activeAvatar.icon}
+          </div>
           <div>
-            <h1 style={{
-              fontSize: '15px',
+            <div style={{ fontSize: '13px', fontWeight: '900', color: '#F8FAFC', lineHeight: '1.1' }}>
+              {state.playerName}
+            </div>
+            <div style={{
+              fontSize: '11px',
               fontWeight: '900',
-              letterSpacing: '0.8px',
-              color: '#F8FAFC',
-              lineHeight: '1.1'
+              color: '#FFD54F',
+              fontFamily: '"Press Start 2P", monospace',
+              marginTop: '2px'
             }}>
-              GENESIS PIXEL
-            </h1>
-            <span style={{
-              fontSize: '10px',
-              color: '#94A3B8',
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase'
-            }}>
-              {state.selectedNationality || 'Suku Primordial'} • Idle Cosmos
-            </span>
+              👑 {formatNumber(totalCP)} CP
+            </div>
           </div>
         </div>
 
-        {/* Quick Modal Triggers & Debug Tools */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           <button
             onClick={onOpenGerbang}
             title="Penugasan Gerbang & Pertahanan"
             className="btn-pixel"
-            style={{ fontSize: '11px', padding: '4px 8px' }}
+            style={{ fontSize: '10px', padding: '4px 7px' }}
           >
-            🛡️ Gerbang
+            🛡️ Gerbang ({state.garrisonedPasukan})
           </button>
           <button
             onClick={onOpenHospital}
             title="Balai Pengobatan Pasukan Terluka"
             className="btn-pixel"
-            style={{ fontSize: '11px', padding: '4px 8px' }}
+            style={{ fontSize: '10px', padding: '4px 7px' }}
           >
             🏥 {state.woundedPasukan > 0 ? `(${state.woundedPasukan})` : 'Obat'}
           </button>
@@ -72,7 +99,7 @@ export default function Header({
             onClick={onOpenGudang}
             title="Gudang Sumber Daya Lengkap"
             className="btn-pixel"
-            style={{ fontSize: '11px', padding: '4px 8px' }}
+            style={{ fontSize: '10px', padding: '4px 7px' }}
           >
             📦
           </button>
@@ -80,7 +107,7 @@ export default function Header({
             onClick={onGodMode}
             title="God Mode: +50k Zenith, +10k Resources"
             className="btn-pixel gold"
-            style={{ fontSize: '11px', padding: '4px 8px' }}
+            style={{ fontSize: '10px', padding: '4px 6px' }}
           >
             🛠️
           </button>
@@ -88,40 +115,29 @@ export default function Header({
             onClick={onMaxAll}
             title="Buka Semua Era & Komandan Mythical"
             className="btn-pixel cyan"
-            style={{ fontSize: '11px', padding: '4px 8px' }}
+            style={{ fontSize: '10px', padding: '4px 6px' }}
           >
             ⚡
           </button>
         </div>
       </div>
 
-      {/* Hero Zenith Display Card */}
+      {/* Middle Row: Zenith & Troops Status Banner */}
       <div style={{
         backgroundColor: 'rgba(30, 41, 59, 0.7)',
-        borderRadius: '12px',
+        borderRadius: '10px',
         border: '1.5px solid rgba(255, 255, 255, 0.1)',
-        padding: '10px 14px',
+        padding: '8px 12px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: 'rgba(255, 179, 0, 0.15)',
-            border: '1.5px solid rgba(255, 179, 0, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '20px'
-          }}>
-            ✨
-          </div>
+        {/* Zenith counter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '20px' }}>✨</span>
           <div>
             <div style={{
-              fontSize: '20px',
+              fontSize: '18px',
               fontWeight: '900',
               color: '#FFD54F',
               fontFamily: '"Press Start 2P", monospace',
@@ -129,46 +145,33 @@ export default function Header({
             }}>
               {formatNumber(state.totalZenith)}
             </div>
-            <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>
-              +{formatNumber(zenithRate)} / detik (Pasif)
+            <div style={{ fontSize: '10px', color: '#4ADE80', fontWeight: '700' }}>
+              +{formatNumber(zenithRate)} / detik
             </div>
           </div>
         </div>
 
-        {/* Civilization Vital Pills */}
+        {/* Pasukan status pill */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-end',
-          gap: '4px'
+          gap: '2px',
+          fontSize: '11px'
         }}>
-          <div style={{
-            fontSize: '11px',
-            color: '#CBD5E1',
-            backgroundColor: 'rgba(15, 23, 42, 0.6)',
-            padding: '2px 8px',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
-          }}>
-            😊 Kebahagiaan: <strong style={{ color: '#FCD34D' }}>{state.happiness}%</strong>
+          <div style={{ color: '#CBD5E1' }}>
+            ⚔️ Barak: <strong style={{ color: '#60A5FA' }}>{state.currentPasukan}/{state.maxPasukan}</strong>
           </div>
-          <div style={{
-            fontSize: '11px',
-            color: '#CBD5E1',
-            backgroundColor: 'rgba(15, 23, 42, 0.6)',
-            padding: '2px 8px',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
-          }}>
-            ⚔️ Pasukan: <strong style={{ color: '#60A5FA' }}>{state.currentPasukan}/{state.maxPasukan}</strong>
+          <div style={{ color: '#94A3B8', fontSize: '10px' }}>
+            🛡️ Gerbang: <strong style={{ color: '#FCD34D' }}>{state.garrisonedPasukan}</strong> • 🏥 Sakit: <strong style={{ color: '#F87171' }}>{state.woundedPasukan}</strong>
           </div>
         </div>
       </div>
 
-      {/* Horizontal Scrollable Resource Strip */}
+      {/* Horizontal Resource Strip */}
       <div style={{
         display: 'flex',
-        gap: '8px',
+        gap: '6px',
         overflowX: 'auto',
         paddingBottom: '2px'
       }}>
@@ -194,10 +197,10 @@ function ResourceBadge({ icon, label, val, color }) {
     <div style={{
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '5px',
+      gap: '4px',
       backgroundColor: 'rgba(30, 41, 59, 0.6)',
       border: '1px solid rgba(255, 255, 255, 0.08)',
-      padding: '3px 8px',
+      padding: '3px 7px',
       borderRadius: '6px',
       fontSize: '11px',
       whiteSpace: 'nowrap'
