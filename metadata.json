@@ -1,0 +1,6 @@
+{
+  "name": "Genesis Pixel: Idle Cosmos",
+  "description": "A space idle civilization game.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
