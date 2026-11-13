@@ -19,3 +19,14 @@ debug.keystore
 node_modules/
 dist/
 .vite/
+assets/
+public/assets/extracted/
+*.zip
+*.rar
+inspect_and_slice.py
+organize_assets.mjs
+check_dim.mjs
+check_sprites.mjs
+slice_sprites.ps1
+slice_house.ps1
+slice_characters.ps1

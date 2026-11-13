@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ALL_BUILDINGS } from '../gameState';
 import { sound } from '../utils/retroAudio';
 import { drawBuildingSprite } from '../utils/canvasBuildingRenderer';
+import { getCachedImage, GAME_ASSETS } from '../utils/assetLoader';
 
 // Virtual world map dimensions in 32x32 tiles (Spacious 36 x 26 grid)
 const TILE_SIZE = 32;
@@ -302,11 +303,16 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
           if (c >= 3 && c <= 8 && r >= 15 && r <= 19) {
             ctx.fillStyle = soilFarm;
             ctx.fillRect(tx, ty, TILE_SIZE, TILE_SIZE);
-            // Golden Wheat Rows
-            ctx.fillStyle = '#FBBF24';
-            ctx.fillRect(tx + 2, ty + 6, TILE_SIZE - 4, 3);
-            ctx.fillRect(tx + 2, ty + 16, TILE_SIZE - 4, 3);
-            ctx.fillRect(tx + 2, ty + 26, TILE_SIZE - 4, 3);
+            const cropImg = getCachedImage(GAME_ASSETS.crops);
+            if (cropImg) {
+              ctx.drawImage(cropImg, 0, 0, 16, 16, tx, ty, TILE_SIZE, TILE_SIZE);
+            } else {
+              // Golden Wheat Rows
+              ctx.fillStyle = '#FBBF24';
+              ctx.fillRect(tx + 2, ty + 6, TILE_SIZE - 4, 3);
+              ctx.fillRect(tx + 2, ty + 16, TILE_SIZE - 4, 3);
+              ctx.fillRect(tx + 2, ty + 26, TILE_SIZE - 4, 3);
+            }
             continue;
           }
 
@@ -359,6 +365,8 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
       ];
 
       const windSway = Math.sin(tick * 0.04) * 2.5;
+      const realTreeImg = getCachedImage(GAME_ASSETS.tree);
+
       treePositions.forEach((pos) => {
         const tx = pos.col * TILE_SIZE;
         const ty = pos.row * TILE_SIZE;
@@ -369,15 +377,20 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
         ctx.ellipse(tx + 16, ty + 28, 14, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Trunk
-        ctx.fillStyle = '#5C2D0C';
-        ctx.fillRect(tx + 13, ty + 18, 6, 12);
+        if (realTreeImg) {
+          // Draw authentic real Maple Tree sprite!
+          ctx.drawImage(realTreeImg, tx - 4 + windSway * 0.5, ty - 16, 40, 48);
+        } else {
+          // Trunk
+          ctx.fillStyle = '#5C2D0C';
+          ctx.fillRect(tx + 13, ty + 18, 6, 12);
 
-        // Multi-tier Pine Leaves
-        ctx.fillStyle = eraId === 'cyberpunk' ? '#0284C7' : '#15803D';
-        ctx.fillRect(tx + 2 + windSway, ty + 12, 28, 12);
-        ctx.fillStyle = eraId === 'cyberpunk' ? '#38BDF8' : '#22C55E';
-        ctx.fillRect(tx + 6 + (windSway * 1.3), ty + 2, 20, 10);
+          // Multi-tier Pine Leaves
+          ctx.fillStyle = eraId === 'cyberpunk' ? '#0284C7' : '#15803D';
+          ctx.fillRect(tx + 2 + windSway, ty + 12, 28, 12);
+          ctx.fillStyle = eraId === 'cyberpunk' ? '#38BDF8' : '#22C55E';
+          ctx.fillRect(tx + 6 + (windSway * 1.3), ty + 2, 20, 10);
+        }
       });
 
       // Central Campfire near Town Hall
@@ -417,6 +430,8 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
       // ======================================================================
       // 3. CITIZENS & PATROLLING SOLDIERS (Animated walk cycles)
       // ======================================================================
+      const realHeroImg = getCachedImage(GAME_ASSETS.farmerHero);
+
       citizens.forEach((c) => {
         c.x += c.speed * c.dir;
         if (Math.abs(c.x - c.targetX) < 2) {
@@ -429,23 +444,36 @@ export default function PixelCanvas({ state, onCanvasTap, onSelectBuilding, isFu
 
         // Shadow
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(c.x, c.y + 16, 12, 4);
+        ctx.fillRect(c.x, c.y + 16, 14, 4);
 
-        // Legs
-        ctx.fillStyle = '#1E293B';
-        ctx.fillRect(c.x + 2 + legOffset, c.y + 12 - walkBounce, 3, 5);
-        ctx.fillRect(c.x + 7 - legOffset, c.y + 12 - walkBounce, 3, 5);
+        if (realHeroImg) {
+          // Draw authentic real Chibi Hero sprite!
+          ctx.save();
+          if (c.dir < 0) {
+            ctx.translate(c.x + 16, c.y - 8 - walkBounce);
+            ctx.scale(-1, 1);
+            ctx.drawImage(realHeroImg, -16, 0, 32, 32);
+          } else {
+            ctx.drawImage(realHeroImg, c.x, c.y - 8 - walkBounce, 32, 32);
+          }
+          ctx.restore();
+        } else {
+          // Legs
+          ctx.fillStyle = '#1E293B';
+          ctx.fillRect(c.x + 2 + legOffset, c.y + 12 - walkBounce, 3, 5);
+          ctx.fillRect(c.x + 7 - legOffset, c.y + 12 - walkBounce, 3, 5);
 
-        // Body Costume
-        ctx.fillStyle = c.role === 'leader' ? '#FACC15'
-          : c.role === 'guard' ? '#EF4444'
-          : c.role === 'warrior' ? '#F97316'
-          : '#3B82F6';
-        ctx.fillRect(c.x + 1, c.y + 4 - walkBounce, 10, 9);
+          // Body Costume
+          ctx.fillStyle = c.role === 'leader' ? '#FACC15'
+            : c.role === 'guard' ? '#EF4444'
+            : c.role === 'warrior' ? '#F97316'
+            : '#3B82F6';
+          ctx.fillRect(c.x + 1, c.y + 4 - walkBounce, 10, 9);
 
-        // Head
-        ctx.fillStyle = '#FBCFE8';
-        ctx.fillRect(c.x + 3, c.y - 2 - walkBounce, 6, 6);
+          // Head
+          ctx.fillStyle = '#FBCFE8';
+          ctx.fillRect(c.x + 3, c.y - 2 - walkBounce, 6, 6);
+        }
 
         // Leader Royal Cloak / Weapons
         if (c.role === 'leader') {

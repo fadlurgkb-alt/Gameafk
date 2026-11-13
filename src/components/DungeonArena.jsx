@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { DUNGEON_MONSTERS, formatNumber } from '../gameState';
 import { sound } from '../utils/retroAudio';
+import { getCachedImage, GAME_ASSETS } from '../utils/assetLoader';
 
 export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) {
   const canvasRef = useRef(null);
@@ -312,29 +313,39 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       ctx.stroke();
 
       // Main Commander Hero (Frontline)
+      const realHeroImg = getCachedImage(GAME_ASSETS.farmerHero);
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
       ctx.beginPath();
       ctx.ellipse(heroBaseX + 4, groundY - 2, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Hero Body Armor
-      ctx.fillStyle = heroColorFlash || primaryHero.color || '#3B82F6';
-      ctx.fillRect(heroBaseX - 8, groundY - 34 + heroBob, 18, 20);
+      if (realHeroImg) {
+        ctx.save();
+        if (heroColorFlash) {
+          ctx.filter = 'sepia(1) hue-rotate(300deg) saturate(5)';
+        }
+        ctx.drawImage(realHeroImg, heroBaseX - 16, groundY - 44 + heroBob, 40, 40);
+        ctx.restore();
+      } else {
+        // Hero Body Armor
+        ctx.fillStyle = heroColorFlash || primaryHero.color || '#3B82F6';
+        ctx.fillRect(heroBaseX - 8, groundY - 34 + heroBob, 18, 20);
 
-      // Royal Cloak
-      ctx.fillStyle = '#DC2626';
-      ctx.fillRect(heroBaseX - 12, groundY - 32 + heroBob, 5, 16);
+        // Royal Cloak
+        ctx.fillStyle = '#DC2626';
+        ctx.fillRect(heroBaseX - 12, groundY - 32 + heroBob, 5, 16);
 
-      // Hero Head & Crown
-      ctx.fillStyle = '#FED7AA';
-      ctx.fillRect(heroBaseX - 5, groundY - 44 + heroBob, 12, 11);
-      ctx.fillStyle = '#FACC15'; // Crown
-      ctx.fillRect(heroBaseX - 7, groundY - 48 + heroBob, 16, 5);
-      ctx.fillRect(heroBaseX + 1, groundY - 51 + heroBob, 4, 4);
+        // Hero Head & Crown
+        ctx.fillStyle = '#FED7AA';
+        ctx.fillRect(heroBaseX - 5, groundY - 44 + heroBob, 12, 11);
+        ctx.fillStyle = '#FACC15'; // Crown
+        ctx.fillRect(heroBaseX - 7, groundY - 48 + heroBob, 16, 5);
+        ctx.fillRect(heroBaseX + 1, groundY - 51 + heroBob, 4, 4);
 
-      // Eyes
-      ctx.fillStyle = '#0F172A';
-      ctx.fillRect(heroBaseX + 2, groundY - 40 + heroBob, 3, 3);
+        // Eyes
+        ctx.fillStyle = '#0F172A';
+        ctx.fillRect(heroBaseX + 2, groundY - 40 + heroBob, 3, 3);
+      }
 
       // Hero Sword & Golden Slash Arc
       if (isSlashing) {
@@ -376,8 +387,17 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       ctx.ellipse(bX, groundY - 2, 34, 8, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Render Specific Monster Sprite by Level
-      if (currentBoss.level <= 1) {
+      // Render Monster Sprite (Authentic Blood Monster if available)
+      const realMonsterImg = getCachedImage(GAME_ASSETS.bloodMonster);
+      if (realMonsterImg) {
+        ctx.save();
+        if (flashColor) {
+          ctx.filter = 'brightness(2.5)';
+        }
+        // Draw Authentic High-End Monster Sprite (100x100)
+        ctx.drawImage(realMonsterImg, bX - 50, groundY - 85 + bossBob, 100, 100);
+        ctx.restore();
+      } else if (currentBoss.level <= 1) {
         // Savage Dire Wolf
         ctx.fillStyle = flashColor || '#475569';
         ctx.fillRect(bX - 22, groundY - 28 + bossBob, 38, 18);
