@@ -2,128 +2,211 @@ import React from 'react';
 import { formatNumber } from '../gameState';
 
 export default function Header({
-  resources,
+  state,
   zenithRate,
   onOpenGudang,
+  onOpenHospital,
+  onOpenGerbang,
   onOpenStats,
-  onOpenCommanders,
   onGodMode,
   onMaxAll
 }) {
   return (
     <header style={{
       padding: '12px 14px',
-      backgroundColor: '#121622',
-      borderBottom: '2px solid #232B3E',
+      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+      backdropFilter: 'blur(12px)',
+      borderBottom: '1.5px solid rgba(255, 255, 255, 0.08)',
       display: 'flex',
       flexDirection: 'column',
       gap: '10px'
     }}>
-      {/* Top Bar: Title & Debug Buttons */}
+      {/* Top Row: Brand & Quick Action Controls */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px' }}>🌌</span>
+          <span style={{ fontSize: '22px' }}>🌌</span>
           <div>
             <h1 style={{
               fontSize: '15px',
-              fontWeight: '800',
+              fontWeight: '900',
               letterSpacing: '0.8px',
-              color: '#ECEFF1',
-              lineHeight: '1.2'
+              color: '#F8FAFC',
+              lineHeight: '1.1'
             }}>
               GENESIS PIXEL
             </h1>
-            <span style={{ fontSize: '10px', color: '#90A4AE', textTransform: 'uppercase' }}>
-              Idle Cosmos
+            <span style={{
+              fontSize: '10px',
+              color: '#94A3B8',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            }}>
+              {state.selectedNationality || 'Suku Primordial'} • Idle Cosmos
             </span>
           </div>
         </div>
 
-        {/* Action & Debug Controls */}
+        {/* Quick Modal Triggers & Debug Tools */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
-            onClick={onGodMode}
-            title="Dewa Mode (+50k Zenith, +10k Resources)"
-            className="btn-pixel gold"
+            onClick={onOpenGerbang}
+            title="Penugasan Gerbang & Pertahanan"
+            className="btn-pixel"
             style={{ fontSize: '11px', padding: '4px 8px' }}
           >
-            🛠️ Dewa
+            🛡️ Gerbang
           </button>
           <button
-            onClick={onMaxAll}
-            title="Buka Semua Era & Hero Mythical"
-            className="btn-pixel cyan"
+            onClick={onOpenHospital}
+            title="Balai Pengobatan Pasukan Terluka"
+            className="btn-pixel"
             style={{ fontSize: '11px', padding: '4px 8px' }}
           >
-            ⚡ MAX
+            🏥 {state.woundedPasukan > 0 ? `(${state.woundedPasukan})` : 'Obat'}
           </button>
           <button
             onClick={onOpenGudang}
-            title="Gudang Sumber Daya"
+            title="Gudang Sumber Daya Lengkap"
             className="btn-pixel"
             style={{ fontSize: '11px', padding: '4px 8px' }}
           >
             📦
           </button>
           <button
-            onClick={onOpenStats}
-            title="Statistik Peradaban"
-            className="btn-pixel"
+            onClick={onGodMode}
+            title="God Mode: +50k Zenith, +10k Resources"
+            className="btn-pixel gold"
             style={{ fontSize: '11px', padding: '4px 8px' }}
           >
-            📊
+            🛠️
+          </button>
+          <button
+            onClick={onMaxAll}
+            title="Buka Semua Era & Komandan Mythical"
+            className="btn-pixel cyan"
+            style={{ fontSize: '11px', padding: '4px 8px' }}
+          >
+            ⚡
           </button>
         </div>
       </div>
 
-      {/* Primary Zenith Display */}
+      {/* Hero Zenith Display Card */}
       <div style={{
-        backgroundColor: '#1A2130',
-        borderRadius: '8px',
-        border: '1.5px solid #2E3A52',
-        padding: '8px 12px',
+        backgroundColor: 'rgba(30, 41, 59, 0.7)',
+        borderRadius: '12px',
+        border: '1.5px solid rgba(255, 255, 255, 0.1)',
+        padding: '10px 14px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '22px' }}>✨</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(255, 179, 0, 0.15)',
+            border: '1.5px solid rgba(255, 179, 0, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '20px'
+          }}>
+            ✨
+          </div>
           <div>
             <div style={{
               fontSize: '20px',
-              fontWeight: '800',
-              color: '#FFD700',
+              fontWeight: '900',
+              color: '#FFD54F',
               fontFamily: '"Press Start 2P", monospace',
               letterSpacing: '-0.5px'
             }}>
-              {formatNumber(resources.zenith)}
+              {formatNumber(state.totalZenith)}
             </div>
-            <div style={{ fontSize: '11px', color: '#81C784', fontWeight: '600' }}>
-              +{formatNumber(zenithRate)} / detik
+            <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: '700' }}>
+              +{formatNumber(zenithRate)} / detik (Pasif)
             </div>
           </div>
         </div>
 
+        {/* Civilization Vital Pills */}
         <div style={{
           display: 'flex',
-          gap: '12px',
-          backgroundColor: '#111622',
-          padding: '6px 10px',
-          borderRadius: '6px',
-          border: '1px solid #242D40',
-          fontSize: '11px',
-          fontWeight: '700'
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '4px'
         }}>
-          <div style={{ color: '#B0BEC5' }}>🪨 {formatNumber(resources.batu)}</div>
-          <div style={{ color: '#A1887F' }}>🪵 {formatNumber(resources.kayu)}</div>
-          <div style={{ color: '#FF8A65' }}>🥩 {formatNumber(resources.daging)}</div>
-          <div style={{ color: '#90CAF9' }}>⛓️ {formatNumber(resources.besi)}</div>
+          <div style={{
+            fontSize: '11px',
+            color: '#CBD5E1',
+            backgroundColor: 'rgba(15, 23, 42, 0.6)',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.08)'
+          }}>
+            😊 Kebahagiaan: <strong style={{ color: '#FCD34D' }}>{state.happiness}%</strong>
+          </div>
+          <div style={{
+            fontSize: '11px',
+            color: '#CBD5E1',
+            backgroundColor: 'rgba(15, 23, 42, 0.6)',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.08)'
+          }}>
+            ⚔️ Pasukan: <strong style={{ color: '#60A5FA' }}>{state.currentPasukan}/{state.maxPasukan}</strong>
+          </div>
         </div>
       </div>
+
+      {/* Horizontal Scrollable Resource Strip */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        overflowX: 'auto',
+        paddingBottom: '2px'
+      }}>
+        <ResourceBadge icon="🪨" label="Batu" val={state.batu} color="#94A3B8" />
+        <ResourceBadge icon="🪵" label="Kayu" val={state.kayu} color="#A1887F" />
+        <ResourceBadge icon="⛓️" label="Besi" val={state.besi} color="#90CAF9" />
+        <ResourceBadge icon="🪙" label="Emas" val={state.emas} color="#FBBF24" />
+        <ResourceBadge icon="🥩" label="Daging" val={state.daging} color="#F87171" />
+        <ResourceBadge icon="🫐" label="Berry" val={state.berry} color="#C084FC" />
+        <ResourceBadge icon="🌾" label="Gandum" val={state.gandum} color="#FDE047" />
+        <ResourceBadge icon="🍞" label="Roti" val={state.roti} color="#FB923C" />
+        <ResourceBadge icon="🛢️" label="Minyak" val={state.oil} color="#64748B" />
+        <ResourceBadge icon="⚡" label="Listrik" val={state.listrik} color="#38BDF8" />
+        <ResourceBadge icon="🦾" label="Titanium" val={state.titanium} color="#A7F3D0" />
+        <ResourceBadge icon="☢️" label="Uranium" val={state.uranium} color="#86EFAC" />
+      </div>
     </header>
+  );
+}
+
+function ResourceBadge({ icon, label, val, color }) {
+  return (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '5px',
+      backgroundColor: 'rgba(30, 41, 59, 0.6)',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
+      padding: '3px 8px',
+      borderRadius: '6px',
+      fontSize: '11px',
+      whiteSpace: 'nowrap'
+    }}>
+      <span>{icon}</span>
+      <span style={{ color: '#94A3B8' }}>{label}:</span>
+      <span style={{ fontWeight: '800', color: color || '#F8FAFC' }}>
+        {formatNumber(val)}
+      </span>
+    </div>
   );
 }
