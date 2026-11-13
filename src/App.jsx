@@ -28,6 +28,7 @@ import GachaModal from './components/GachaModal';
 import ProfileModal from './components/ProfileModal';
 import BuildingDetailModal from './components/BuildingDetailModal';
 import BarracksModal from './components/BarracksModal';
+import GodModeModal from './components/GodModeModal';
 import { sound } from './utils/retroAudio';
 
 const STORAGE_KEY = 'GENESIS_PIXEL_SAVE_V3';
@@ -65,6 +66,7 @@ export default function App() {
   const [isKamusOpen, setIsKamusOpen] = useState(false);
   const [isGachaOpen, setIsGachaOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isGodModeOpen, setIsGodModeOpen] = useState(false);
 
   // Passive Zenith Rate calculation
   const zenithRate = ALL_BUILDINGS.reduce((sum, b) => {
@@ -484,7 +486,7 @@ export default function App() {
         onOpenHospital={() => setIsHospitalOpen(true)}
         onOpenGerbang={() => setIsGerbangOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
-        onGodMode={handleGodMode}
+        onGodMode={() => setIsGodModeOpen(true)}
         onMaxAll={handleMaxAll}
       />
 
@@ -666,6 +668,12 @@ export default function App() {
         onClose={() => setIsProfileOpen(false)}
         state={state}
         onSelectAvatar={(avatarId) => setState((p) => ({ ...p, avatarId }))}
+      />
+      <GodModeModal
+        isOpen={isGodModeOpen}
+        onClose={() => setIsGodModeOpen(false)}
+        state={state}
+        setState={setState}
       />
     </div>
   );

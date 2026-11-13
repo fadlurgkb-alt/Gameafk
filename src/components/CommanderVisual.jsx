@@ -1,374 +1,465 @@
 import React from 'react';
 
 /**
- * Pixel-Art SVG Visual Generator for all 22 Unique Historical & Mythical Commanders
- * Designed with specific weapons, armor, signature headdresses, and distinctive identities!
+ * Authentic 16-Bit Retro Chibi Pixel Art Commander Visuals (All 22 Historical & Mythical Heroes)
+ * Clean, proportional, high-contrast palette, zero distorted vector curves or raw emojis!
  */
 export default function CommanderVisual({ id, size = 64, style = {} }) {
-  let svgContent = null;
+  // Helper to draw a pixel rect
+  const r = (x, y, w, h, fill) => (
+    <rect key={`${x}-${y}-${w}-${h}`} x={x} y={y} width={w} height={h} fill={fill} />
+  );
+
+  let pixels = null;
 
   switch (id) {
     case 'zeus':
-      // Zeus (Mythical) - Dewa Petir: White beard, golden laurel, cyan lightning bolt, white-gold toga
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E1B4B" stroke="#F59E0B" strokeWidth="2" />
-          <ellipse cx="32" cy="56" rx="20" ry="4" fill="rgba(0,0,0,0.4)" />
-          {/* Toga Body */}
-          <path d="M 20 36 L 44 36 L 46 58 L 18 58 Z" fill="#F8FAFC" />
-          <path d="M 22 36 L 36 36 L 30 58 L 20 58 Z" fill="#E2E8F0" />
-          <line x1="20" y1="40" x2="44" y2="40" stroke="#F59E0B" strokeWidth="2" />
+      // Zeus (Mythical) - Dewa Petir: White Beard, Golden Laurel, Cyan Lightning Bolt
+      pixels = (
+        <g>
+          {/* Circular Glow Aura */}
+          <circle cx="16" cy="16" r="15" fill="#1E1B4B" stroke="#F59E0B" strokeWidth="1" />
+          {/* White & Gold Toga Body */}
+          {r(10, 18, 12, 11, '#F8FAFC')}
+          {r(10, 20, 12, 2, '#F59E0B')}
+          {r(9, 21, 2, 7, '#E2E8F0')}
+          {r(21, 21, 2, 7, '#E2E8F0')}
           {/* Head & Skin */}
-          <circle cx="32" cy="24" r="10" fill="#FDE68A" />
+          {r(11, 8, 10, 8, '#FED7AA')}
           {/* White Hair & Majestic Beard */}
-          <path d="M 22 20 Q 32 10 42 20" fill="none" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" />
-          <polygon points="24,28 40,28 32,44" fill="#FFFFFF" />
-          {/* Golden Laurel Wreath */}
-          <path d="M 24 16 Q 32 12 40 16" fill="none" stroke="#F59E0B" strokeWidth="3" />
+          {r(9, 6, 14, 4, '#FFFFFF')}
+          {r(9, 8, 3, 5, '#FFFFFF')}
+          {r(20, 8, 3, 5, '#FFFFFF')}
+          {r(10, 13, 12, 6, '#FFFFFF')}
+          {r(12, 19, 8, 3, '#FFFFFF')}
+          {/* Golden Laurel Crown */}
+          {r(11, 6, 10, 2, '#F59E0B')}
+          {r(10, 7, 2, 2, '#FDE047')}
+          {r(20, 7, 2, 2, '#FDE047')}
+          {/* Cyan Glowing Eyes */}
+          {r(12, 10, 2, 2, '#06B6D4')}
+          {r(18, 10, 2, 2, '#06B6D4')}
           {/* Cyan Lightning Bolt in Hand */}
-          <polygon points="46,12 40,28 47,28 41,50 56,26 48,26" fill="#06B6D4" stroke="#67E8F9" strokeWidth="1" />
-          {/* Glowing Eyes */}
-          <circle cx="28" cy="23" r="1.5" fill="#06B6D4" />
-          <circle cx="36" cy="23" r="1.5" fill="#06B6D4" />
-        </svg>
+          {r(23, 5, 2, 6, '#06B6D4')}
+          {r(21, 9, 3, 2, '#67E8F9')}
+          {r(21, 11, 2, 6, '#06B6D4')}
+          {r(19, 15, 3, 2, '#67E8F9')}
+          {r(19, 17, 2, 8, '#06B6D4')}
+        </g>
       );
       break;
 
     case 'athena':
-      // Athena (Mythical) - Golden Corinthian helmet, red crest, Aegis shield with owl, spear
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E1B4B" stroke="#F59E0B" strokeWidth="2" />
-          <ellipse cx="32" cy="56" rx="20" ry="4" fill="rgba(0,0,0,0.4)" />
-          {/* White & Gold Chiton */}
-          <path d="M 22 36 L 42 36 L 44 58 L 20 58 Z" fill="#F8FAFC" />
-          <rect x="26" y="36" width="12" height="12" fill="#F59E0B" />
-          {/* Head */}
-          <circle cx="32" cy="24" r="9" fill="#FDE68A" />
-          {/* Golden Corinthian Helm with Red Plume */}
-          <polygon points="32,4 36,16 28,16" fill="#DC2626" />
-          <path d="M 22 22 L 42 22 L 40 14 L 24 14 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
-          {/* Spear on right */}
-          <line x1="48" y1="8" x2="48" y2="58" stroke="#D1D5DB" strokeWidth="2" />
-          <polygon points="48,4 51,10 45,10" fill="#F59E0B" />
-          {/* Aegis Round Shield on left */}
-          <circle cx="18" cy="42" r="11" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
-          <circle cx="18" cy="42" r="6" fill="#3B82F6" />
-          <text x="14" y="45" fontSize="7" fill="#F8FAFC">🦉</text>
-        </svg>
+      // Athena (Mythical) - Dewi Kebijaksanaan & Perang: Corinthian Helm, Red Plume, Spear & Shield
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#1E1B4B" stroke="#FACC15" strokeWidth="1" />
+          {/* Golden Armor Torso */}
+          {r(10, 18, 12, 11, '#F59E0B')}
+          {r(12, 19, 8, 8, '#FDE047')}
+          {r(11, 27, 10, 2, '#B45309')}
+          {/* Face */}
+          {r(12, 9, 8, 7, '#FED7AA')}
+          {/* Golden Corinthian Helmet */}
+          {r(10, 7, 12, 4, '#F59E0B')}
+          {r(9, 9, 3, 6, '#D97706')}
+          {r(20, 9, 3, 6, '#D97706')}
+          {/* Red Crest / Plume */}
+          {r(15, 2, 3, 6, '#DC2626')}
+          {r(14, 4, 5, 3, '#EF4444')}
+          {/* Eyes */}
+          {r(13, 11, 2, 2, '#1E293B')}
+          {r(17, 11, 2, 2, '#1E293B')}
+          {/* Spear in Right Hand */}
+          {r(24, 2, 2, 27, '#CBD5E1')}
+          {r(23, 2, 4, 3, '#FACC15')}
+          {/* Round Aegis Shield in Left Hand */}
+          {r(4, 15, 7, 9, '#F59E0B')}
+          {r(5, 16, 5, 7, '#3B82F6')}
+          {r(6, 18, 3, 3, '#FACC15')}
+        </g>
       );
       break;
 
     case 'odin':
-      // Odin (Mythical) - Allfather with horned helm, eye patch, grey beard, blue cloak, Gungnir
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E1B4B" stroke="#EF4444" strokeWidth="2" />
+      // Odin (Mythical) - Allfather: Horned Helm, Eye Patch, Grey Beard, Blue Cloak, Spear
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#0F172A" stroke="#3B82F6" strokeWidth="1" />
           {/* Blue Cloak */}
-          <path d="M 16 34 L 48 34 L 52 58 L 12 58 Z" fill="#1E3A8A" />
-          <circle cx="32" cy="24" r="10" fill="#FED7AA" />
-          {/* Grey Long Beard */}
-          <polygon points="24,28 40,28 32,50" fill="#94A3B8" />
-          {/* Horned Viking Helmet */}
-          <path d="M 22 20 Q 32 12 42 20 Z" fill="#475569" stroke="#F59E0B" strokeWidth="1.5" />
-          <polygon points="18,14 24,18 20,22" fill="#F8FAFC" />
-          <polygon points="46,14 40,18 44,22" fill="#F8FAFC" />
-          {/* Eye Patch on Left eye */}
-          <line x1="26" y1="20" x2="31" y2="25" stroke="#0F172A" strokeWidth="2.5" />
-          {/* Glowing Single Eye */}
-          <circle cx="35" cy="22" r="2" fill="#67E8F9" />
-          {/* Gungnir Spear */}
-          <line x1="50" y1="6" x2="50" y2="58" stroke="#F59E0B" strokeWidth="2.5" />
-          <polygon points="50,2 53,8 47,8" fill="#F8FAFC" />
-        </svg>
+          {r(9, 17, 14, 12, '#1E3A8A')}
+          {r(11, 19, 10, 10, '#1D4ED8')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Long Grey Beard */}
+          {r(10, 14, 12, 6, '#94A3B8')}
+          {r(12, 19, 8, 4, '#94A3B8')}
+          {r(13, 23, 6, 3, '#CBD5E1')}
+          {/* Viking Horned Helm */}
+          {r(10, 6, 12, 4, '#475569')}
+          {r(7, 3, 3, 5, '#F8FAFC')} {/* Left Horn */}
+          {r(22, 3, 3, 5, '#F8FAFC')} {/* Right Horn */}
+          {/* Eye Patch (Left Eye) & Glowing Blue Right Eye */}
+          {r(12, 11, 3, 2, '#020617')}
+          {r(17, 11, 2, 2, '#38BDF8')}
+          {/* Gungnir Golden Spear */}
+          {r(25, 2, 2, 27, '#F59E0B')}
+          {r(24, 1, 4, 3, '#FDE047')}
+        </g>
       );
       break;
 
     case 'archon':
-      // CYBER-ARCHON ZERO (Mythical) - Futuristic Android Core, Neon visor, Holographic halo
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#090D16" stroke="#06B6D4" strokeWidth="2" />
-          {/* Hologram Halo */}
-          <ellipse cx="32" cy="12" rx="16" ry="4" fill="none" stroke="#06B6D4" strokeWidth="2" strokeDasharray="3 2" />
-          {/* Carbon Torso */}
-          <rect x="20" y="34" width="24" height="24" rx="3" fill="#0F172A" stroke="#06B6D4" strokeWidth="1.5" />
-          {/* Glowing Core */}
-          <circle cx="32" cy="44" r="5" fill="#06B6D4" />
-          <circle cx="32" cy="44" r="2.5" fill="#F8FAFC" />
-          {/* Cybernetic Head */}
-          <rect x="24" y="16" width="16" height="16" rx="2" fill="#1E293B" stroke="#06B6D4" strokeWidth="1.5" />
-          {/* Cyan Neon Visor Eye */}
-          <rect x="26" y="21" width="12" height="4" fill="#06B6D4" />
-          <line x1="22" y1="23" x2="42" y2="23" stroke="#A855F7" strokeWidth="1" />
-        </svg>
+      // Cyber-Archon (Mythical) - Android Overlord: Neon Visor, Plasma Core, Obsidian Armor
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#020617" stroke="#06B6D4" strokeWidth="1" />
+          {/* Obsidian Body Armor */}
+          {r(10, 17, 12, 12, '#0F172A')}
+          {r(12, 19, 8, 7, '#1E293B')}
+          {/* Glowing Plasma Core */}
+          {r(14, 21, 4, 4, '#06B6D4')}
+          {r(15, 22, 2, 2, '#FFFFFF')}
+          {/* Cybernetic Helmet */}
+          {r(10, 7, 12, 9, '#1E293B')}
+          {r(9, 8, 2, 6, '#06B6D4')}
+          {r(21, 8, 2, 6, '#06B6D4')}
+          {/* Neon Cyan Visor */}
+          {r(11, 10, 10, 3, '#06B6D4')}
+          {r(12, 11, 8, 1, '#FFFFFF')}
+          {/* Holographic Halo Ring */}
+          {r(11, 3, 10, 2, '#06B6D4')}
+          {r(8, 4, 3, 2, '#06B6D4')}
+          {r(21, 4, 3, 2, '#06B6D4')}
+        </g>
       );
       break;
 
     case 'arthur':
-      // Arthur Pendragon (SSR) - Golden crown, knight armor, glowing blue Excalibur, royal red cloak
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#F59E0B" strokeWidth="2" />
-          {/* Red Cape */}
-          <path d="M 16 34 L 48 34 L 52 58 L 12 58 Z" fill="#DC2626" />
-          {/* Knight Silver Plate */}
-          <rect x="22" y="34" width="20" height="24" rx="2" fill="#94A3B8" stroke="#475569" strokeWidth="1.5" />
-          <circle cx="32" cy="22" r="9" fill="#FED7AA" />
+      // Arthur Pendragon (SSR) - Raja Britania: Golden Crown, Blue Tunic, Shining Excalibur
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#1E293B" stroke="#FACC15" strokeWidth="1" />
+          {/* Royal Blue Tunic & Armor */}
+          {r(10, 17, 12, 12, '#2563EB')}
+          {r(12, 19, 8, 8, '#3B82F6')}
+          {r(10, 24, 12, 2, '#FACC15')} {/* Gold belt */}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
           {/* Blonde Hair */}
-          <path d="M 23 20 Q 32 14 41 20" fill="#FBBF24" />
-          {/* Royal Gold Crown */}
-          <polygon points="24,14 26,8 29,12 32,6 35,12 38,8 40,14" fill="#F59E0B" stroke="#B45309" strokeWidth="0.8" />
+          {r(9, 8, 3, 6, '#FDE047')}
+          {r(20, 8, 3, 6, '#FDE047')}
+          {/* Golden Crown */}
+          {r(10, 6, 12, 3, '#FACC15')}
+          {r(10, 4, 3, 2, '#FDE047')}
+          {r(14, 3, 4, 3, '#FDE047')}
+          {r(19, 4, 3, 2, '#FDE047')}
+          {/* Eyes */}
+          {r(13, 11, 2, 2, '#1E3A8A')}
+          {r(17, 11, 2, 2, '#1E3A8A')}
           {/* Excalibur Sword */}
-          <line x1="48" y1="12" x2="48" y2="52" stroke="#60A5FA" strokeWidth="3" />
-          <line x1="43" y1="20" x2="53" y2="20" stroke="#F59E0B" strokeWidth="2" />
-          <circle cx="48" cy="10" r="2.5" fill="#93C5FD" />
-        </svg>
+          {r(23, 6, 2, 18, '#F8FAFC')}
+          {r(21, 18, 6, 2, '#FACC15')}
+          {r(23, 20, 2, 4, '#78350F')}
+        </g>
       );
       break;
 
     case 'joan':
-      // Joan of Arc (SSR) - Silver armor, holy fleur-de-lis banner, bob haircut, devout knight
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#F59E0B" strokeWidth="2" />
-          <rect x="22" y="34" width="20" height="24" rx="2" fill="#E2E8F0" stroke="#64748B" strokeWidth="1.5" />
-          <circle cx="32" cy="22" r="8.5" fill="#FED7AA" />
-          {/* Brown Bob Haircut */}
-          <path d="M 23 16 Q 32 12 41 16 L 42 25 L 22 25 Z" fill="#78350F" />
-          {/* Holy Cross Banner */}
-          <line x1="48" y1="6" x2="48" y2="58" stroke="#78350F" strokeWidth="2" />
-          <rect x="36" y="8" width="12" height="18" fill="#F8FAFC" stroke="#F59E0B" strokeWidth="1" />
-          <text x="39" y="21" fontSize="10" fill="#F59E0B">⚜️</text>
-        </svg>
+      // Joan of Arc (SSR) - Ksatria Suci: Silver Plate Armor, White-Gold Banner
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#1E293B" stroke="#E2E8F0" strokeWidth="1" />
+          {/* Silver Plate Armor */}
+          {r(10, 17, 12, 12, '#94A3B8')}
+          {r(12, 18, 8, 9, '#CBD5E1')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Blonde Bob Haircut */}
+          {r(9, 7, 14, 4, '#FDE047')}
+          {r(8, 9, 3, 6, '#FACC15')}
+          {r(21, 9, 3, 6, '#FACC15')}
+          {/* Eyes */}
+          {r(13, 11, 2, 2, '#2563EB')}
+          {r(17, 11, 2, 2, '#2563EB')}
+          {/* Fleur-de-lis Banner in Right Hand */}
+          {r(23, 3, 2, 26, '#78350F')}
+          {r(24, 4, 6, 8, '#F8FAFC')}
+          {r(26, 6, 2, 4, '#FACC15')}
+        </g>
       );
       break;
 
     case 'gilgamesh':
-      // Gilgamesh (SSR) - Golden Sumerian armor, crimson eyes, arrogant king of Uruk
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#F59E0B" strokeWidth="2" />
-          <rect x="20" y="32" width="24" height="26" rx="2" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
-          <circle cx="32" cy="20" r="9" fill="#FED7AA" />
-          {/* Spiked Gold Crown */}
-          <polygon points="23,14 26,6 32,10 38,6 41,14" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
-          {/* Crimson Eyes */}
-          <circle cx="28" cy="20" r="1.5" fill="#EF4444" />
-          <circle cx="36" cy="20" r="1.5" fill="#EF4444" />
-          {/* Golden Gate Portal Sword floating behind */}
-          <line x1="12" y1="14" x2="18" y2="30" stroke="#F59E0B" strokeWidth="3" />
-          <line x1="52" y1="14" x2="46" y2="30" stroke="#F59E0B" strokeWidth="3" />
-        </svg>
+      // Gilgamesh (SSR) - Raja Uruk: Golden Full Armor, Crimson Cape, Jeweled Crown
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#3B0764" stroke="#FACC15" strokeWidth="1" />
+          {/* Crimson Cape behind */}
+          {r(7, 16, 18, 13, '#991B1B')}
+          {/* Shining Gold Armor */}
+          {r(10, 17, 12, 12, '#F59E0B')}
+          {r(12, 18, 8, 9, '#FDE047')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Golden Spiky Hair */}
+          {r(9, 5, 14, 4, '#FACC15')}
+          {r(8, 8, 3, 5, '#FDE047')}
+          {r(21, 8, 3, 5, '#FDE047')}
+          {/* Piercing Crimson Eyes */}
+          {r(13, 11, 2, 2, '#DC2626')}
+          {r(17, 11, 2, 2, '#DC2626')}
+        </g>
       );
       break;
 
     case 'cleopatra':
-      // Cleopatra VII (SSR) - Egyptian royal nemes headdress, ankh scepter, eyeliner
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#F59E0B" strokeWidth="2" />
-          {/* White Linen Dress with Gold collar */}
-          <path d="M 22 36 L 42 36 L 44 58 L 20 58 Z" fill="#F8FAFC" />
-          <circle cx="32" cy="36" r="8" fill="#F59E0B" />
-          <circle cx="32" cy="22" r="8.5" fill="#FCD34D" />
-          {/* Nemes Blue-Gold Striped Headdress */}
-          <path d="M 22 14 Q 32 8 42 14 L 46 32 L 38 28 L 32 30 L 26 28 L 18 32 Z" fill="#0284C7" stroke="#F59E0B" strokeWidth="1.5" />
-          {/* Cobra Uraeus on forehead */}
-          <circle cx="32" cy="11" r="2" fill="#F59E0B" />
-          {/* Golden Ankh in Hand */}
-          <circle cx="48" cy="40" r="3" fill="none" stroke="#F59E0B" strokeWidth="1.5" />
-          <line x1="48" y1="43" x2="48" y2="52" stroke="#F59E0B" strokeWidth="2" />
-          <line x1="44" y1="46" x2="52" y2="46" stroke="#F59E0B" strokeWidth="2" />
-        </svg>
+      // Cleopatra (SSR) - Ratu Mesir: Nemes Headdress, Golden Collar, Turquoise Gown
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#0C4A6E" stroke="#FACC15" strokeWidth="1" />
+          {/* Turquoise Gown */}
+          {r(10, 18, 12, 11, '#06B6D4')}
+          {r(9, 17, 14, 3, '#FACC15')} {/* Golden collar */}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Black Egyptian Hair & Headdress with Gold Bands */}
+          {r(8, 7, 16, 4, '#0F172A')}
+          {r(7, 9, 4, 9, '#0F172A')}
+          {r(21, 9, 4, 9, '#0F172A')}
+          {r(7, 12, 4, 1.5, '#FACC15')}
+          {r(21, 12, 4, 1.5, '#FACC15')}
+          {/* Golden Cobra Headdress */}
+          {r(15, 5, 2, 3, '#FACC15')}
+          {/* Kohl-lined Eyes */}
+          {r(12, 11, 3, 2, '#0F172A')}
+          {r(17, 11, 3, 2, '#0F172A')}
+        </g>
       );
       break;
 
     case 'genghis':
-      // Genghis Khan (SSR) - Conical fur hat, Mongolian armor, recurve bow
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#F59E0B" strokeWidth="2" />
-          <rect x="20" y="34" width="24" height="24" rx="2" fill="#78350F" stroke="#451A03" strokeWidth="2" />
-          <circle cx="32" cy="23" r="9" fill="#FED7AA" />
-          {/* Fur Hat with Conical Peak & Feather */}
-          <ellipse cx="32" cy="16" rx="12" ry="4" fill="#D97706" />
-          <polygon points="26,16 32,6 38,16" fill="#991B1B" />
-          <line x1="32" y1="6" x2="35" y2="2" stroke="#F8FAFC" strokeWidth="2" />
-          {/* Curved Mustache */}
-          <path d="M 27 28 Q 32 26 37 28" fill="none" stroke="#1E293B" strokeWidth="2" />
-          {/* Recurve Composite Bow */}
-          <path d="M 48 20 Q 56 36 48 52" fill="none" stroke="#F59E0B" strokeWidth="3" />
-        </svg>
+      // Genghis Khan (SSR) - Panglima Stepa: Fur Nomadic Hat, Leather Armor, Recurve Bow
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#1C1917" stroke="#EA580C" strokeWidth="1" />
+          {/* Leather Nomad Armor */}
+          {r(10, 17, 12, 12, '#78350F')}
+          {r(12, 19, 8, 8, '#92400E')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Steppe Fur Hat with Feather */}
+          {r(9, 5, 14, 5, '#A8A29E')}
+          {r(8, 9, 16, 2, '#78350F')}
+          {r(15, 2, 2, 4, '#F8FAFC')} {/* Feather */}
+          {/* Mustache */}
+          {r(12, 13, 8, 2, '#1C1917')}
+          {/* Eyes */}
+          {r(13, 11, 2, 1, '#1C1917')}
+          {r(17, 11, 2, 1, '#1C1917')}
+          {/* Recurve Bow on Left */}
+          {r(5, 10, 2, 16, '#92400E')}
+          {r(7, 12, 1, 12, '#FFFFFF')}
+        </g>
       );
       break;
 
     case 'tesla':
-      // Nikola Tesla (SSR) - Suit, mustache, Tesla coil electric bulbs
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#F59E0B" strokeWidth="2" />
+      // Nikola Tesla (SSR) - Maestro Kilat: Dark Suit, Mustache, Lightning Coil in Hand
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#0F172A" stroke="#38BDF8" strokeWidth="1" />
           {/* Victorian Suit */}
-          <rect x="22" y="34" width="20" height="24" rx="2" fill="#0F172A" />
-          <polygon points="32,34 28,42 32,46 36,42" fill="#DC2626" />
-          <circle cx="32" cy="22" r="8" fill="#FED7AA" />
-          {/* Hair parted in center */}
-          <path d="M 23 16 Q 32 12 41 16 L 41 22 L 23 22 Z" fill="#1E293B" />
-          {/* Mustache */}
-          <line x1="28" y1="26" x2="36" y2="26" stroke="#1E293B" strokeWidth="2" />
-          {/* Glowing Wireless Bulb in Hand */}
-          <circle cx="48" cy="36" r="6" fill="#67E8F9" stroke="#0284C7" strokeWidth="1" />
-          <polygon points="46,30 49,34 47,34 50,40" fill="#FFFFFF" />
-        </svg>
+          {r(10, 17, 12, 12, '#1E293B')}
+          {r(14, 18, 4, 6, '#F8FAFC')}
+          {r(15, 20, 2, 4, '#DC2626')} {/* Red tie */}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Sleek Black Hair */}
+          {r(9, 6, 14, 4, '#0F172A')}
+          {r(8, 8, 3, 5, '#0F172A')}
+          {r(21, 8, 3, 5, '#0F172A')}
+          {/* Signature Mustache */}
+          {r(13, 13, 6, 1.5, '#0F172A')}
+          {/* Eyes */}
+          {r(13, 11, 2, 2, '#0F172A')}
+          {r(17, 11, 2, 2, '#0F172A')}
+          {/* Mini Tesla Coil in Hand with Sparks */}
+          {r(23, 17, 4, 8, '#94A3B8')}
+          {r(22, 15, 6, 2, '#F59E0B')}
+          {r(23, 12, 3, 3, '#38BDF8')}
+        </g>
       );
       break;
 
     case 'gajah_mada':
-      // Gajah Mada (SR) - Mahapatih Majapahit, destar crown, traditional sash, Keris pusaka
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#8B5CF6" strokeWidth="2" />
-          {/* Muscular Torso with Gold Badong Collar */}
-          <rect x="20" y="34" width="24" height="24" rx="2" fill="#B45309" stroke="#78350F" strokeWidth="1.5" />
-          <polygon points="26,34 38,34 32,42" fill="#F59E0B" />
-          {/* Head & Stern Face */}
-          <circle cx="32" cy="22" r="9" fill="#B45309" />
-          {/* Golden Destar / Udeng Crown */}
-          <path d="M 21 16 Q 32 10 43 16 L 41 21 L 23 21 Z" fill="#F59E0B" stroke="#78350F" strokeWidth="1.5" />
-          <polygon points="32,10 34,6 30,6" fill="#DC2626" />
-          {/* Keris Naga Pusaka with Wavy Luk Blade */}
-          <path d="M 48 20 Q 51 26 48 32 Q 51 38 48 44 L 48 54" fill="none" stroke="#D1D5DB" strokeWidth="3" />
-          <rect x="45" y="52" width="6" height="6" rx="1" fill="#F59E0B" />
-        </svg>
+      // Gajah Mada (SR) - Mahapatih Majapahit: Destar Emas Jawa, Kain Batik, Keris Luk Emas
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#451A03" stroke="#FACC15" strokeWidth="1" />
+          {/* Bronze Torso Armor & Batik Sash */}
+          {r(10, 17, 12, 12, '#B45309')}
+          {r(10, 24, 12, 5, '#78350F')}
+          {r(11, 18, 3, 11, '#FACC15')} {/* Golden sash */}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#D97706')}
+          {/* Traditional Javanese Golden Destar Headdress */}
+          {r(9, 6, 14, 4, '#78350F')}
+          {r(10, 8, 12, 2, '#FACC15')}
+          {r(15, 4, 2, 3, '#FDE047')}
+          {/* Fierce Eyes & Mustache */}
+          {r(13, 11, 2, 2, '#1E293B')}
+          {r(17, 11, 2, 2, '#1E293B')}
+          {r(12, 13, 8, 2, '#1E293B')}
+          {/* Golden Wavy Keris */}
+          {r(23, 12, 3, 4, '#FDE047')}
+          {r(24, 16, 2, 3, '#FACC15')}
+          {r(23, 19, 3, 4, '#FDE047')}
+          {r(24, 23, 2, 4, '#78350F')} {/* Handle */}
+        </g>
       );
       break;
 
     case 'alexander':
-      // Alexander the Great (SR) - Macedonian crested bronze helm, hoplite shield
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#8B5CF6" strokeWidth="2" />
-          <rect x="22" y="34" width="20" height="24" rx="2" fill="#D97706" stroke="#92400E" strokeWidth="1.5" />
-          <circle cx="32" cy="22" r="9" fill="#FED7AA" />
-          {/* Macedonian Crested Helmet */}
-          <path d="M 23 16 Q 32 10 41 16" fill="#F59E0B" />
-          <polygon points="32,2 35,14 29,14" fill="#DC2626" />
-          {/* Greek Sun Shield */}
-          <circle cx="16" cy="42" r="11" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
-          <circle cx="16" cy="42" r="4" fill="#1E293B" />
-          {/* Spear */}
-          <line x1="48" y1="6" x2="48" y2="56" stroke="#E2E8F0" strokeWidth="2.5" />
-        </svg>
+      // Alexander the Great (SR) - Penakluk Makedonia: Lion Helm, Bronze Cuirass, Kopis Sword
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#1E293B" stroke="#F59E0B" strokeWidth="1" />
+          {/* Bronze Muscle Cuirass */}
+          {r(10, 17, 12, 12, '#D97706')}
+          {r(12, 18, 8, 9, '#F59E0B')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Lion Crest Bronze Helmet */}
+          {r(10, 6, 12, 4, '#F59E0B')}
+          {r(9, 8, 3, 6, '#B45309')}
+          {r(20, 8, 3, 6, '#B45309')}
+          {r(14, 2, 4, 5, '#EF4444')} {/* Plume */}
+          {/* Eyes */}
+          {r(13, 11, 2, 2, '#1E293B')}
+          {r(17, 11, 2, 2, '#1E293B')}
+          {/* Sword in Hand */}
+          {r(23, 8, 2, 17, '#E2E8F0')}
+          {r(22, 19, 4, 2, '#F59E0B')}
+        </g>
       );
       break;
 
     case 'musashi':
-      // Miyamoto Musashi (SR) - Samurai topknot, dual katanas
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#8B5CF6" strokeWidth="2" />
-          {/* Dark Kimono */}
-          <rect x="20" y="34" width="24" height="24" rx="2" fill="#1E293B" stroke="#475569" strokeWidth="1.5" />
-          <circle cx="32" cy="22" r="8.5" fill="#FED7AA" />
-          {/* Samurai Hair & Topknot */}
-          <path d="M 23 16 Q 32 12 41 16 L 41 21 L 23 21 Z" fill="#0F172A" />
-          <circle cx="32" cy="9" r="3" fill="#0F172A" />
-          {/* Crossed Dual Katanas */}
-          <line x1="14" y1="16" x2="30" y2="54" stroke="#E2E8F0" strokeWidth="2.5" />
-          <line x1="50" y1="16" x2="34" y2="54" stroke="#E2E8F0" strokeWidth="2.5" />
-        </svg>
+      // Miyamoto Musashi (SR) - Master Ronin: Topknot, Haori Kimono, Dual Katanas
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#18181B" stroke="#DC2626" strokeWidth="1" />
+          {/* Ronin Grey Kimono */}
+          {r(10, 17, 12, 12, '#3F3F46')}
+          {r(12, 18, 4, 8, '#F8FAFC')}
+          {r(10, 23, 12, 2, '#18181B')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Topknot Chonmage Hair */}
+          {r(9, 6, 14, 4, '#18181B')}
+          {r(15, 3, 3, 4, '#18181B')}
+          {/* Eyes */}
+          {r(13, 11, 2, 1.5, '#18181B')}
+          {r(17, 11, 2, 1.5, '#18181B')}
+          {/* Dual Katana: Main Long Katana */}
+          {r(23, 4, 2, 22, '#F8FAFC')}
+          {r(22, 18, 4, 2, '#F59E0B')}
+          {/* Offhand Short Wakizashi */}
+          {r(6, 14, 2, 12, '#F8FAFC')}
+        </g>
       );
       break;
 
     case 'sun_tzu':
-      // Sun Tzu (SR) - Chinese scholar-general robe, bamboo scroll
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#8B5CF6" strokeWidth="2" />
-          <rect x="20" y="34" width="24" height="24" rx="2" fill="#065F46" stroke="#047857" strokeWidth="1.5" />
-          <circle cx="32" cy="22" r="8.5" fill="#FED7AA" />
-          {/* Scholar Cap */}
-          <rect x="24" y="10" width="16" height="6" fill="#1E293B" />
-          <rect x="28" y="6" width="8" height="4" fill="#F59E0B" />
-          {/* Long Beard */}
-          <polygon points="28,28 36,28 32,44" fill="#334155" />
-          {/* Bamboo Scroll */}
-          <rect x="44" y="36" width="12" height="14" rx="2" fill="#FDE68A" stroke="#B45309" strokeWidth="1.5" />
-        </svg>
+      // Sun Tzu (SR) - Ahli Strategi Perang: Green Scholar Hanfu, Bamboo Scrolls
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#064E3B" stroke="#10B981" strokeWidth="1" />
+          {/* Emerald Scholar Hanfu */}
+          {r(10, 17, 12, 12, '#047857')}
+          {r(12, 18, 8, 9, '#10B981')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Traditional Black Scholar Cap */}
+          {r(11, 5, 10, 4, '#0F172A')}
+          {r(9, 8, 14, 2, '#0F172A')}
+          {/* Sage Beard */}
+          {r(13, 14, 6, 5, '#F8FAFC')}
+          {/* Eyes */}
+          {r(13, 11, 2, 1.5, '#0F172A')}
+          {r(17, 11, 2, 1.5, '#0F172A')}
+          {/* Bamboo War Scroll in Hand */}
+          {r(22, 16, 5, 8, '#FBBF24')}
+          {r(22, 18, 5, 1, '#78350F')}
+          {r(22, 21, 5, 1, '#78350F')}
+        </g>
       );
       break;
 
     case 'leonidas':
-      // Leonidas I (SR) - Spartan bronze helm, red cape, Spartan V-shield
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#8B5CF6" strokeWidth="2" />
-          {/* Red Spartan Cape */}
-          <path d="M 16 34 L 48 34 L 52 58 L 12 58 Z" fill="#DC2626" />
-          <circle cx="32" cy="22" r="9" fill="#B45309" />
-          {/* Spartan Corinthian Bronze Helm */}
-          <polygon points="32,3 36,15 28,15" fill="#1E293B" />
-          <path d="M 23 20 L 41 20 L 39 12 L 25 12 Z" fill="#B45309" />
-          {/* Bronze Lambda Shield (Spartan V) */}
-          <circle cx="18" cy="42" r="11" fill="#B45309" stroke="#78350F" strokeWidth="2" />
-          <polygon points="18,34 23,46 13,46" fill="none" stroke="#F59E0B" strokeWidth="2" />
-          <line x1="48" y1="8" x2="48" y2="58" stroke="#E2E8F0" strokeWidth="2.5" />
-        </svg>
-      );
-      break;
-
-    case 'gorg':
-      // Gorg Si Pemburu (R) - Mammoth bone pelt, flint spear
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#3B82F6" strokeWidth="2" />
-          <rect x="22" y="34" width="20" height="24" rx="2" fill="#78350F" />
-          <circle cx="32" cy="22" r="9" fill="#FED7AA" />
-          {/* Wild Caveman Hair & Bone */}
-          <ellipse cx="32" cy="15" rx="11" ry="6" fill="#451A03" />
-          <rect x="26" y="14" width="12" height="3" fill="#F8FAFC" rx="1.5" />
-          {/* Flint Spear */}
-          <line x1="48" y1="8" x2="48" y2="56" stroke="#78350F" strokeWidth="2.5" />
-          <polygon points="48,4 52,11 44,11" fill="#94A3B8" />
-        </svg>
-      );
-      break;
-
-    case 'shaman':
-      // Dukun Batu Kirana (R) - Feather headdress, glowing totem staff
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#3B82F6" strokeWidth="2" />
-          <rect x="22" y="34" width="20" height="24" rx="2" fill="#451A03" />
-          <circle cx="32" cy="22" r="8.5" fill="#FED7AA" />
-          {/* Feather Headdress */}
-          <polygon points="26,16 28,4 30,16" fill="#DC2626" />
-          <polygon points="31,16 33,2 35,16" fill="#0284C7" />
-          <polygon points="36,16 38,5 40,16" fill="#F59E0B" />
-          {/* Totem Staff with Glowing Orb */}
-          <line x1="48" y1="12" x2="48" y2="56" stroke="#78350F" strokeWidth="2.5" />
-          <circle cx="48" cy="12" r="4.5" fill="#10B981" />
-        </svg>
+      // Leonidas (SR) - Raja Sparta: Spartan Corinthian Helm, Round Hoplon Shield, Spear
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#450A0A" stroke="#EF4444" strokeWidth="1" />
+          {/* Red Spartan Cape & Bronze Cuirass */}
+          {r(8, 17, 16, 12, '#B91C1C')}
+          {r(11, 18, 10, 10, '#D97706')}
+          {/* Face */}
+          {r(12, 9, 8, 7, '#FED7AA')}
+          {/* Heavy Black Spartan Beard */}
+          {r(11, 13, 10, 6, '#1C1917')}
+          {/* Corinthian Bronze Helm with Giant Red Transverse Crest */}
+          {r(10, 6, 12, 4, '#D97706')}
+          {r(8, 2, 16, 4, '#DC2626')} {/* Crest */}
+          {/* Fierce Eyes */}
+          {r(13, 11, 2, 2, '#FFFFFF')}
+          {r(14, 11, 1, 1, '#000000')}
+          {r(17, 11, 2, 2, '#FFFFFF')}
+          {r(17, 11, 1, 1, '#000000')}
+          {/* Hoplon Round Shield with Lambda (Λ) */}
+          {r(4, 15, 7, 9, '#D97706')}
+          {r(6, 17, 3, 5, '#DC2626')}
+          {/* Spear in Hand */}
+          {r(24, 3, 2, 26, '#CBD5E1')}
+        </g>
       );
       break;
 
     default:
-      // Universal Valiant Hero Portrait
-      svgContent = (
-        <svg viewBox="0 0 64 64" width={size} height={size} style={{ imageRendering: 'pixelated', ...style }}>
-          <circle cx="32" cy="32" r="30" fill="#1E293B" stroke="#3B82F6" strokeWidth="2" />
-          <rect x="22" y="34" width="20" height="24" rx="2" fill="#475569" stroke="#64748B" strokeWidth="1.5" />
-          <circle cx="32" cy="22" r="9" fill="#FED7AA" />
-          <polygon points="24,14 32,8 40,14" fill="#3B82F6" />
-          <line x1="48" y1="12" x2="48" y2="52" stroke="#E2E8F0" strokeWidth="2.5" />
-        </svg>
+      // Primitive Hunters, Shamans, and Other R Heroes
+      pixels = (
+        <g>
+          <circle cx="16" cy="16" r="15" fill="#334155" stroke="#94A3B8" strokeWidth="1" />
+          {/* Animal Fur Tunic */}
+          {r(10, 17, 12, 12, '#78350F')}
+          {r(11, 18, 10, 9, '#92400E')}
+          {/* Face */}
+          {r(11, 9, 10, 7, '#FED7AA')}
+          {/* Wild Dark Hair with Bone or Headband */}
+          {r(9, 6, 14, 4, '#1E293B')}
+          {r(8, 8, 3, 5, '#1E293B')}
+          {r(21, 8, 3, 5, '#1E293B')}
+          {r(13, 5, 6, 2, '#F8FAFC')} {/* Bone accessory */}
+          {/* Eyes */}
+          {r(13, 11, 2, 2, '#0F172A')}
+          {r(17, 11, 2, 2, '#0F172A')}
+          {/* Primitive Spear / Club */}
+          {r(23, 6, 2, 22, '#78350F')}
+          {r(22, 5, 4, 3, '#94A3B8')}
+        </g>
       );
       break;
   }
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-      {svgContent}
-    </div>
+    <svg
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
+      style={{ imageRendering: 'pixelated', display: 'block', ...style }}
+    >
+      {pixels}
+    </svg>
   );
 }

@@ -7,6 +7,10 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
   const canvasRef = useRef(null);
   const [skillCooldown, setSkillCooldown] = useState(0);
 
+  // Player HP State in Dungeon (PVE Combat)
+  const playerMaxHp = (state.garrisonedPasukan || 10) * 150 + 1000;
+  const [playerHp, setPlayerHp] = useState(playerMaxHp);
+
   const currentBoss = DUNGEON_MONSTERS.find((m) => m.level === state.currentDungeonLevel)
     || DUNGEON_MONSTERS[0];
 
@@ -15,28 +19,39 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
 
   const simRef = useRef({
     tick: 0,
+    // Player Party
     heroX: 130,
-    heroAnim: 'idle', // 'idle' | 'slash' | 'skill'
+    heroAnim: 'idle', // 'idle' | 'slash' | 'skill' | 'hurt'
     heroSlashTimer: 0,
+    heroHurtTimer: 0,
+    // Boss AI & Attack Cycle
+    bossBaseX: 470,
+    bossX: 470,
+    bossAnim: 'idle', // 'idle' | 'telegraph' | 'lunge' | 'strike'
+    bossAttackTimer: 140, // Counts down to attack every ~2.5s
     bossHitTimer: 0,
+    // Visual Effects
     screenShake: 0,
     damageTexts: [],
+    arrows: [],
     magicBeams: [],
-    particles: []
+    particles: [],
+    claws: []
   });
 
-  // Manual Attack Trigger with Animation & Sound
+  // Manual Player Attack Trigger
   const handlePlayerAttack = () => {
     sound.playAttack();
-    simRef.current.heroAnim = 'slash';
-    simRef.current.heroSlashTimer = 12;
-    simRef.current.bossHitTimer = 10;
-    simRef.current.screenShake = 6;
+    const sim = simRef.current;
+    sim.heroAnim = 'slash';
+    sim.heroSlashTimer = 12;
+    sim.bossHitTimer = 10;
+    sim.screenShake = 6;
 
     const dmg = (state.damage || 100) * 10;
-    // Spawn floating damage text
-    simRef.current.damageTexts.push({
-      x: 480 + (Math.random() * 40 - 20),
+    // Floating damage text on boss
+    sim.damageTexts.push({
+      x: sim.bossX + (Math.random() * 40 - 20),
       y: 110,
       text: `-${formatNumber(dmg)}`,
       color: '#F87171',
@@ -46,8 +61,8 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
 
     // Blood / Spark particles
     for (let i = 0; i < 8; i++) {
-      simRef.current.particles.push({
-        x: 480,
+      sim.particles.push({
+        x: sim.bossX,
         y: 160,
         vx: (Math.random() - 0.5) * 6,
         vy: -Math.random() * 4 - 1,
@@ -60,20 +75,21 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
     if (onAttackBoss) onAttackBoss();
   };
 
-  // Ultimate Skill Burst
+  // Hero Ultimate Skill Burst
   const handleHeroUltimate = () => {
     if (skillCooldown > 0) return;
     sound.playUpgrade();
     setSkillCooldown(8);
 
-    simRef.current.heroAnim = 'skill';
-    simRef.current.heroSlashTimer = 25;
-    simRef.current.bossHitTimer = 22;
-    simRef.current.screenShake = 14;
+    const sim = simRef.current;
+    sim.heroAnim = 'skill';
+    sim.heroSlashTimer = 25;
+    sim.bossHitTimer = 22;
+    sim.screenShake = 14;
 
     const ultDmg = (state.damage || 100) * 35;
-    simRef.current.damageTexts.push({
-      x: 480,
+    sim.damageTexts.push({
+      x: sim.bossX,
       y: 90,
       text: `CRIT! -${formatNumber(ultDmg)} 💥`,
       color: '#FACC15',
@@ -83,10 +99,10 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
 
     // Lightning beams
     for (let b = 0; b < 6; b++) {
-      simRef.current.magicBeams.push({
+      sim.magicBeams.push({
         x1: 150,
         y1: 130,
-        x2: 480 + (Math.random() * 40 - 20),
+        x2: sim.bossX + (Math.random() * 40 - 20),
         y2: 140 + (Math.random() * 40 - 20),
         life: 18,
         color: '#67E8F9'
@@ -95,6 +111,20 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
 
     confetti({ particleCount: 70, spread: 80 });
     if (onAttackBoss) onAttackBoss();
+  };
+
+  // Drink Healing Potion
+  const handleUsePotion = () => {
+    sound.playUpgrade();
+    setPlayerHp((prev) => Math.min(playerMaxHp, prev + Math.floor(playerMaxHp * 0.5)));
+    simRef.current.damageTexts.push({
+      x: 130,
+      y: 110,
+      text: `+${formatNumber(Math.floor(playerMaxHp * 0.5))} HP 💚`,
+      color: '#4ADE80',
+      size: 16,
+      life: 40
+    });
   };
 
   // Cooldown countdown
@@ -106,7 +136,23 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
     return () => clearInterval(timer);
   }, [skillCooldown]);
 
-  // 60 FPS Arena Canvas Rendering Loop
+  // Periodic Archer Troop Proyektil (Support Arrows every 1.2s)
+  useEffect(() => {
+    const arrowTimer = setInterval(() => {
+      const sim = simRef.current;
+      sim.arrows.push({
+        x: 95,
+        y: 145,
+        vx: 9,
+        vy: -2,
+        gravity: 0.12,
+        life: 50
+      });
+    }, 1200);
+    return () => clearInterval(arrowTimer);
+  }, []);
+
+  // 60 FPS Arena Canvas Rendering Loop with Full PVE AI & Enemy Counterattacks!
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -120,6 +166,56 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       sim.tick++;
       const w = canvas.width;
       const h = canvas.height;
+
+      // ======================================================================
+      // 0. ENEMY BOSS AI & COUNTER-ATTACK BEHAVIOR
+      // ======================================================================
+      sim.bossAttackTimer--;
+      if (sim.bossAttackTimer === 30) {
+        // Telegraph phase: boss prepares to strike (eyes flash)
+        sim.bossAnim = 'telegraph';
+      } else if (sim.bossAttackTimer <= 15 && sim.bossAttackTimer > 0) {
+        // Lunge attack: boss leaps forward toward player party!
+        sim.bossAnim = 'lunge';
+        sim.bossX = sim.bossBaseX - (15 - sim.bossAttackTimer) * 14;
+      } else if (sim.bossAttackTimer === 0) {
+        // Strike moment: Deal damage to player party!
+        sim.bossAnim = 'strike';
+        sim.heroHurtTimer = 16;
+        sim.screenShake = 10;
+        sound.playAttack();
+
+        // Claw / Strike visual arc at player position
+        sim.claws.push({ x: 130, y: 140, life: 14 });
+
+        // Deal damage to player
+        const bossDmg = Math.max(45, Math.floor(currentBoss.hp * 0.04));
+        setPlayerHp((prev) => {
+          const next = prev - bossDmg;
+          if (next <= 0) {
+            // Player rally / revival
+            return Math.floor(playerMaxHp * 0.4);
+          }
+          return next;
+        });
+
+        // Floating player damage text
+        sim.damageTexts.push({
+          x: 130 + (Math.random() * 30 - 15),
+          y: 100,
+          text: `-${bossDmg}`,
+          color: '#EF4444',
+          size: 16,
+          life: 40
+        });
+
+        // Reset timer
+        sim.bossAttackTimer = 140 + Math.floor(Math.random() * 40); // 2.5s - 3s
+      } else if (sim.bossAttackTimer > 30) {
+        // Return smoothly to base
+        sim.bossAnim = 'idle';
+        sim.bossX += (sim.bossBaseX - sim.bossX) * 0.15;
+      }
 
       ctx.save();
 
@@ -135,7 +231,7 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       ctx.clearRect(0, 0, w, h);
 
       // ======================================================================
-      // 1. DUNGEON ARENA ENVIRONMENT (Deep Cave & Torches)
+      // 1. DUNGEON ENVIRONMENT (Dungeon Brick Wall, Pillars & Animated Torches)
       // ======================================================================
       const caveGrad = ctx.createLinearGradient(0, 0, 0, h);
       caveGrad.addColorStop(0, '#090A14');
@@ -144,7 +240,7 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       ctx.fillStyle = caveGrad;
       ctx.fillRect(0, 0, w, h);
 
-      // Stone Brick Pillars in background
+      // Stone Brick Pillars
       for (let pX = 60; pX < w; pX += 160) {
         ctx.fillStyle = '#1E2438';
         ctx.fillRect(pX - 16, 20, 32, h);
@@ -175,19 +271,23 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       });
 
       // ======================================================================
-      // 2. HERO PARTY (Commander + Accompanying Troops)
+      // 2. HERO PARTY (Commander + Supporting Troops)
       // ======================================================================
       const isSlashing = sim.heroSlashTimer > 0;
       if (sim.heroSlashTimer > 0) sim.heroSlashTimer--;
 
-      const heroBaseX = isSlashing ? sim.heroX + 25 : sim.heroX;
-      const heroBob = Math.sin(sim.tick * 0.2) * 2;
+      const isHurt = sim.heroHurtTimer > 0;
+      if (sim.heroHurtTimer > 0) sim.heroHurtTimer--;
 
-      // Accompanying Soldier 1 (Spearman in back)
+      const heroBaseX = isSlashing ? sim.heroX + 25 : (isHurt ? sim.heroX - 10 : sim.heroX);
+      const heroBob = Math.sin(sim.tick * 0.2) * 2;
+      const heroColorFlash = isHurt ? '#EF4444' : null;
+
+      // Accompanying Spearman in back
       const spX = heroBaseX - 55;
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.fillRect(spX - 6, groundY - 2, 16, 4);
-      ctx.fillStyle = '#EF4444'; // Red soldier tunic
+      ctx.fillStyle = heroColorFlash || '#EF4444'; // Red soldier tunic
       ctx.fillRect(spX - 5, groundY - 26 + heroBob, 12, 14);
       ctx.fillStyle = '#FED7AA'; // Head
       ctx.fillRect(spX - 3, groundY - 34 + heroBob, 8, 8);
@@ -196,11 +296,11 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       ctx.fillStyle = '#CBD5E1'; // Spear
       ctx.fillRect(spX + 8, groundY - 42 + heroBob, 2, 28);
 
-      // Accompanying Soldier 2 (Archer in back)
+      // Accompanying Archer in back
       const arX = heroBaseX - 32;
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.fillRect(arX - 6, groundY - 2, 16, 4);
-      ctx.fillStyle = '#10B981'; // Green archer tunic
+      ctx.fillStyle = heroColorFlash || '#10B981'; // Green archer tunic
       ctx.fillRect(arX - 5, groundY - 24 + heroBob, 12, 12);
       ctx.fillStyle = '#FED7AA';
       ctx.fillRect(arX - 3, groundY - 32 + heroBob, 8, 8);
@@ -218,14 +318,14 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       ctx.fill();
 
       // Hero Body Armor
-      ctx.fillStyle = primaryHero.color || '#3B82F6';
+      ctx.fillStyle = heroColorFlash || primaryHero.color || '#3B82F6';
       ctx.fillRect(heroBaseX - 8, groundY - 34 + heroBob, 18, 20);
 
-      // Royal Red Cloak
+      // Royal Cloak
       ctx.fillStyle = '#DC2626';
       ctx.fillRect(heroBaseX - 12, groundY - 32 + heroBob, 5, 16);
 
-      // Hero Head & Golden Helmet/Crown
+      // Hero Head & Crown
       ctx.fillStyle = '#FED7AA';
       ctx.fillRect(heroBaseX - 5, groundY - 44 + heroBob, 12, 11);
       ctx.fillStyle = '#FACC15'; // Crown
@@ -236,9 +336,8 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       ctx.fillStyle = '#0F172A';
       ctx.fillRect(heroBaseX + 2, groundY - 40 + heroBob, 3, 3);
 
-      // Hero Sword & Slash Arc
+      // Hero Sword & Golden Slash Arc
       if (isSlashing) {
-        // Glowing Golden Slash Arc
         ctx.strokeStyle = '#FACC15';
         ctx.lineWidth = 4;
         ctx.beginPath();
@@ -251,11 +350,9 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         ctx.arc(heroBaseX + 28, groundY - 34, 25, -Math.PI * 0.35, Math.PI * 0.35);
         ctx.stroke();
 
-        // Extended Blade
         ctx.fillStyle = '#F8FAFC';
         ctx.fillRect(heroBaseX + 12, groundY - 36, 26, 4);
       } else {
-        // Resting Sword
         ctx.fillStyle = '#CBD5E1';
         ctx.fillRect(heroBaseX + 10, groundY - 38 + heroBob, 4, 22);
         ctx.fillStyle = '#FACC15';
@@ -263,14 +360,15 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       }
 
       // ======================================================================
-      // 3. PIXEL ART DUNGEON MONSTER (Rich Detail based on Boss Level)
+      // 3. PIXEL ART DUNGEON MONSTER (Rich Detail & Lunge Animations)
       // ======================================================================
-      const bX = 480;
+      const bX = sim.bossX;
       const isBossHit = sim.bossHitTimer > 0;
       if (sim.bossHitTimer > 0) sim.bossHitTimer--;
 
       const bossBob = Math.sin(sim.tick * 0.16) * 3;
       const flashColor = isBossHit ? '#FFFFFF' : null;
+      const isTelegraph = sim.bossAnim === 'telegraph';
 
       // Boss Ground Shadow
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -280,17 +378,17 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
 
       // Render Specific Monster Sprite by Level
       if (currentBoss.level <= 1) {
-        // Savage Grey Wolf
+        // Savage Dire Wolf
         ctx.fillStyle = flashColor || '#475569';
         ctx.fillRect(bX - 22, groundY - 28 + bossBob, 38, 18);
         ctx.fillRect(bX - 30, groundY - 38 + bossBob, 18, 18); // Head
-        // Wolf Ears & Snout
+        // Ears & Snout
         ctx.fillRect(bX - 28, groundY - 44 + bossBob, 5, 7);
-        ctx.fillRect(bX - 36, groundY - 28 + bossBob, 10, 8); // Snout
+        ctx.fillRect(bX - 36, groundY - 28 + bossBob, 10, 8);
         // Glowing Red Eyes
-        ctx.fillStyle = '#EF4444';
+        ctx.fillStyle = isTelegraph ? '#FDE047' : '#EF4444';
         ctx.fillRect(bX - 26, groundY - 34 + bossBob, 4, 3);
-        // Fangs
+        // Sharp White Fangs
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(bX - 34, groundY - 21 + bossBob, 3, 4);
       } else if (currentBoss.level <= 5) {
@@ -303,24 +401,23 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         ctx.fillRect(bX - 20, groundY - 48 + bossBob, 8, 10);
         ctx.fillRect(bX - 5, groundY - 48 + bossBob, 8, 10);
         // Glowing Yellow Eyes
-        ctx.fillStyle = '#FDE047';
+        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#FDE047';
         ctx.fillRect(bX - 36, groundY - 46 + bossBob, 5, 4);
       } else if (currentBoss.level <= 10) {
-        // Goblin King with Spiked Club & Crown
-        ctx.fillStyle = flashColor || '#15803D'; // Green goblin body
+        // Goblin King with Crown & Spiked Club
+        ctx.fillStyle = flashColor || '#15803D';
         ctx.fillRect(bX - 20, groundY - 44 + bossBob, 36, 32);
         ctx.fillRect(bX - 16, groundY - 58 + bossBob, 28, 20); // Head
         // Jagged Crown
         ctx.fillStyle = '#FACC15';
-        ctx.polygon = [[bX - 16, groundY - 58 + bossBob], [bX - 10, groundY - 68 + bossBob], [bX - 4, groundY - 58 + bossBob], [bX + 4, groundY - 68 + bossBob], [bX + 10, groundY - 58 + bossBob]];
         ctx.fillRect(bX - 16, groundY - 64 + bossBob, 28, 6);
         // Spiked Club in Hand
         ctx.fillStyle = '#78350F';
         ctx.fillRect(bX - 36, groundY - 52 + bossBob, 10, 36);
         ctx.fillStyle = '#94A3B8';
         ctx.fillRect(bX - 40, groundY - 56 + bossBob, 18, 12);
-        // Red Eyes & Teeth
-        ctx.fillStyle = '#EF4444';
+        // Red Eyes
+        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#EF4444';
         ctx.fillRect(bX - 10, groundY - 50 + bossBob, 4, 4);
       } else if (currentBoss.level <= 15) {
         // Orc Warlord with Battleaxe
@@ -341,10 +438,10 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         // Two-Headed Ogre
         ctx.fillStyle = flashColor || '#7C3AED';
         ctx.fillRect(bX - 32, groundY - 64 + bossBob, 60, 48);
-        // Head 1 & Head 2
+        // Heads
         ctx.fillRect(bX - 30, groundY - 82 + bossBob, 24, 22);
         ctx.fillRect(bX + 4, groundY - 82 + bossBob, 24, 22);
-        ctx.fillStyle = '#FDE047';
+        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#FDE047';
         ctx.fillRect(bX - 22, groundY - 74 + bossBob, 4, 4);
         ctx.fillRect(bX + 12, groundY - 74 + bossBob, 4, 4);
       } else {
@@ -355,7 +452,7 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         ctx.fillStyle = '#1E1B4B';
         ctx.fillRect(bX - 34, groundY - 96 + bossBob, 10, 22);
         ctx.fillRect(bX + 22, groundY - 96 + bossBob, 10, 22);
-        // Giant Bat Wings
+        // Flaming Wings
         ctx.fillStyle = '#7F1D1D';
         ctx.beginPath();
         ctx.moveTo(bX + 28, groundY - 60 + bossBob);
@@ -363,16 +460,48 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         ctx.lineTo(bX + 50, groundY - 30 + bossBob);
         ctx.closePath();
         ctx.fill();
-        // Flaming Core
-        ctx.fillStyle = '#F59E0B';
+        // Glowing Flaming Core
+        ctx.fillStyle = isTelegraph ? '#FFFFFF' : '#F59E0B';
         ctx.beginPath();
         ctx.arc(bX - 2, groundY - 48 + bossBob, 12, 0, Math.PI * 2);
         ctx.fill();
       }
 
       // ======================================================================
-      // 4. MAGIC BEAMS & PARTICLES
+      // 4. CLAW SLASH EFFECTS & ARCHER ARROWS
       // ======================================================================
+      // Claws on player
+      for (let i = sim.claws.length - 1; i >= 0; i--) {
+        const c = sim.claws[i];
+        ctx.strokeStyle = '#EF4444';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(c.x - 14, c.y - 18);
+        ctx.lineTo(c.x + 14, c.y + 18);
+        ctx.moveTo(c.x - 6, c.y - 22);
+        ctx.lineTo(c.x + 22, c.y + 14);
+        ctx.stroke();
+        c.life--;
+        if (c.life <= 0) sim.claws.splice(i, 1);
+      }
+
+      // Archer Arrows
+      for (let i = sim.arrows.length - 1; i >= 0; i--) {
+        const ar = sim.arrows[i];
+        ar.x += ar.vx;
+        ar.y += ar.vy;
+        ar.vy += ar.gravity;
+        ctx.fillStyle = '#FDE047';
+        ctx.fillRect(ar.x, ar.y, 10, 2);
+        ar.life--;
+        if (ar.x >= sim.bossX || ar.life <= 0) {
+          // Arrow impact
+          sim.bossHitTimer = 4;
+          sim.arrows.splice(i, 1);
+        }
+      }
+
+      // Magic Beams
       for (let i = sim.magicBeams.length - 1; i >= 0; i--) {
         const mb = sim.magicBeams[i];
         ctx.strokeStyle = mb.color;
@@ -385,6 +514,7 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         if (mb.life <= 0) sim.magicBeams.splice(i, 1);
       }
 
+      // Particles
       for (let i = sim.particles.length - 1; i >= 0; i--) {
         const p = sim.particles[i];
         p.x += p.vx;
@@ -395,15 +525,13 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
         if (p.life <= 0) sim.particles.splice(i, 1);
       }
 
-      // ======================================================================
-      // 5. FLOATING DAMAGE NUMBERS
-      // ======================================================================
+      // Floating Damage Numbers
       for (let i = sim.damageTexts.length - 1; i >= 0; i--) {
         const dt = sim.damageTexts[i];
         dt.y -= 1.2;
         dt.life--;
         ctx.fillStyle = dt.color;
-        ctx.font = `${dt.size}px "Press Start 2P", monospace`;
+        ctx.font = `bold ${dt.size}px "Press Start 2P", monospace`;
         ctx.fillText(dt.text, dt.x, dt.y);
         if (dt.life <= 0) sim.damageTexts.splice(i, 1);
       }
@@ -412,122 +540,108 @@ export default function DungeonArena({ state, onAttackBoss, onToggleAutoFarm }) 
       animId = requestAnimationFrame(render);
     };
 
-    animId = requestAnimationFrame(render);
+    render();
     return () => cancelAnimationFrame(animId);
-  }, [currentBoss, primaryHero, state]);
+  }, [currentBoss, primaryHero, playerMaxHp]);
 
-  // HP Bar Percentage
-  const maxHp = currentBoss.hp || 1000;
-  const curHp = Math.max(0, state.monsterHp);
-  const hpPercent = Math.min(100, Math.max(0, (curHp / maxHp) * 100));
+  // HP Percentages
+  const bossHpPercent = Math.max(0, Math.min(100, (state.monsterHp / (currentBoss.hp || 1)) * 100));
+  const playerHpPercent = Math.max(0, Math.min(100, (playerHp / playerMaxHp) * 100));
 
   return (
-    <div style={{
-      backgroundColor: '#070A14',
-      borderRadius: '16px',
-      border: '2px solid rgba(255, 255, 255, 0.1)',
-      overflow: 'hidden',
-      boxShadow: '0 8px 30px rgba(0,0,0,0.8)'
-    }}>
-      {/* Boss Health Bar Header */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Dual Health Bars HUD (Player Party vs Dungeon Boss) */}
       <div style={{
-        padding: '12px 16px',
         backgroundColor: 'rgba(15, 23, 42, 0.9)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '12px',
+        border: '1.5px solid rgba(255, 255, 255, 0.1)',
+        padding: '12px 14px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px'
+        gap: '8px'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>{currentBoss.icon}</span>
-            <div>
-              <div style={{ fontWeight: '900', fontSize: '13px', color: '#F8FAFC' }}>
-                {currentBoss.name} <span style={{ color: '#F59E0B' }}>(Level {state.currentDungeonLevel})</span>
-              </div>
-              <div style={{ fontSize: '10px', color: '#EF4444', fontWeight: '700' }}>
-                {currentBoss.isBoss ? '👑 DUNGEON BOSS' : '⚔️ ELITE BEAST'}
-              </div>
-            </div>
+        {/* Boss HP Bar */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '900', color: '#F87171', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>👾</span> Lv.{currentBoss.level} {currentBoss.name}
+            </span>
+            <span style={{ fontSize: '11px', color: '#CBD5E1', fontFamily: '"Press Start 2P", monospace' }}>
+              {formatNumber(state.monsterHp)} / {formatNumber(currentBoss.hp)}
+            </span>
           </div>
-
-          <div style={{
-            fontSize: '11px',
-            fontFamily: '"Press Start 2P", monospace',
-            color: '#F87171'
-          }}>
-            {formatNumber(curHp)} / {formatNumber(maxHp)} HP
+          <div style={{ width: '100%', height: '10px', backgroundColor: '#1E293B', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <div style={{ width: `${bossHpPercent}%`, height: '100%', backgroundColor: '#EF4444', transition: 'width 0.15s ease' }} />
           </div>
         </div>
 
-        {/* Dynamic HP Bar */}
-        <div style={{
-          width: '100%',
-          height: '10px',
-          backgroundColor: '#1E293B',
-          borderRadius: '5px',
-          overflow: 'hidden',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
-        }}>
-          <div style={{
-            width: `${hpPercent}%`,
-            height: '100%',
-            backgroundColor: hpPercent > 50 ? '#EF4444' : hpPercent > 20 ? '#F59E0B' : '#DC2626',
-            boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)',
-            transition: 'width 0.15s ease'
-          }} />
+        {/* Player Party HP Bar */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '800', color: '#4ADE80', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🛡️</span> Tim Pahlawan & Garnison ({state.garrisonedPasukan} Prajurit)
+            </span>
+            <span style={{ fontSize: '10px', color: '#86EFAC', fontFamily: '"Press Start 2P", monospace' }}>
+              {formatNumber(playerHp)} / {formatNumber(playerMaxHp)} HP
+            </span>
+          </div>
+          <div style={{ width: '100%', height: '8px', backgroundColor: '#1E293B', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <div style={{ width: `${playerHpPercent}%`, height: '100%', backgroundColor: '#22C55E', transition: 'width 0.2s ease' }} />
+          </div>
         </div>
       </div>
 
-      {/* Battle Canvas */}
-      <canvas
-        ref={canvasRef}
-        width={600}
-        height={220}
-        style={{
-          width: '100%',
-          height: '220px',
-          display: 'block'
-        }}
-      />
-
-      {/* Battle Action Controls */}
+      {/* 60 FPS Canvas Battle Arena */}
       <div style={{
-        padding: '12px 16px',
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '10px'
+        position: 'relative',
+        borderRadius: '14px',
+        overflow: 'hidden',
+        border: '2px solid rgba(255, 255, 255, 0.15)',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.6)'
       }}>
-        {/* Auto Farm Toggle */}
+        <canvas
+          ref={canvasRef}
+          width={640}
+          height={260}
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+        />
+      </div>
+
+      {/* Battle Controls: Attack, Ultimate Skill, Potion, and Auto-Farm */}
+      <div style={{ display: 'flex', gap: '8px' }}>
         <button
-          onClick={onToggleAutoFarm}
-          className={`btn-pixel ${state.autoFarmDungeon ? 'gold' : ''}`}
-          style={{ fontSize: '11px', padding: '8px 14px' }}
+          onClick={handlePlayerAttack}
+          className="btn-pixel gold"
+          style={{ flex: 1.5, padding: '12px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
         >
-          {state.autoFarmDungeon ? '⚡ Auto-Farm AKTIF' : '⏸️ Auto-Farm MATI'}
+          <span>⚔️</span> Serang Cepat
         </button>
 
-        {/* Combat Buttons */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={handleHeroUltimate}
-            disabled={skillCooldown > 0}
-            className="btn-pixel cyan"
-            style={{ fontSize: '11px', padding: '8px 14px' }}
-          >
-            {skillCooldown > 0 ? `⏳ Skill (${skillCooldown}s)` : '🔥 Skill Hero'}
-          </button>
-          <button
-            onClick={handlePlayerAttack}
-            className="btn-pixel gold"
-            style={{ fontSize: '12px', padding: '8px 20px', fontWeight: '900' }}
-          >
-            ⚔️ Serang Bos!
-          </button>
-        </div>
+        <button
+          onClick={handleHeroUltimate}
+          disabled={skillCooldown > 0}
+          className={`btn-pixel ${skillCooldown === 0 ? 'cyan' : ''}`}
+          style={{ flex: 1.5, padding: '12px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+        >
+          <span>⚡</span> Skill Petir {skillCooldown > 0 ? `(${skillCooldown}s)` : 'SIAP'}
+        </button>
+
+        <button
+          onClick={handleUsePotion}
+          className="btn-pixel"
+          style={{ flex: 1, padding: '12px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', backgroundColor: 'rgba(5, 150, 105, 0.4)', border: '1.5px solid #10B981' }}
+          title="Minum Ramuan HP untuk memulihkan darah"
+        >
+          <span>🧪</span> +HP
+        </button>
+
+        <button
+          onClick={onToggleAutoFarm}
+          className={`btn-pixel ${state.autoFarmDungeon ? 'purple' : ''}`}
+          style={{ flex: 1.2, padding: '12px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+        >
+          <span>🤖</span> Auto: {state.autoFarmDungeon ? 'ON' : 'OFF'}
+        </button>
       </div>
     </div>
   );

@@ -114,19 +114,21 @@ export default function Header({
           </button>
           <button
             onClick={onGodMode}
-            title="God Mode: +50k Zenith, +10k Resources"
-            className="btn-pixel gold"
-            style={{ fontSize: '10px', padding: '4px 6px' }}
+            title="Buka Konsol Mode Dewa / Dev Cheats"
+            className="btn-pixel purple"
+            style={{
+              fontSize: '11px',
+              padding: '4px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontWeight: '900',
+              border: '1.5px solid #C084FC',
+              boxShadow: '0 0 10px rgba(168, 85, 247, 0.4)'
+            }}
           >
-            🛠️
-          </button>
-          <button
-            onClick={onMaxAll}
-            title="Buka Semua Era & Komandan Mythical"
-            className="btn-pixel cyan"
-            style={{ fontSize: '10px', padding: '4px 6px' }}
-          >
-            ⚡
+            <span>🛠️</span>
+            <span>DEWA</span>
           </button>
           <button
             onClick={handleToggleSound}
