@@ -17,39 +17,33 @@ export function getCachedImage(src) {
   return null;
 }
 
-// Preload essential authentic game sprites
+// Preload essential authentic game sprites with 100% COMPLETE architectures!
 export const GAME_ASSETS = {
-  // Buildings (Real Farmhouse variations)
-  town_hall: '/assets/sliced/buildings/farm_house_0.png',
-  gudang: '/assets/sliced/buildings/farm_house_1.png',
-  barak_militer: '/assets/sliced/buildings/farm_house_2.png',
-  tembok: '/assets/sliced/buildings/farm_house_3.png',
-  hospital: '/assets/sliced/buildings/farm_house_4.png',
-  tavern: '/assets/sliced/buildings/farm_house_5.png',
-  market: '/assets/sliced/buildings/farm_house_6.png',
-  pertanian: '/assets/sliced/buildings/farm_house_7.png',
+  // Buildings: Only use 100% COMPLETE houses, never partial chopped tiles!
+  town_hall: '/assets/sliced/buildings/farm_house_complete_a.png',
+  pertanian: '/assets/sliced/buildings/farm_house_complete_b.png',
+  // Other buildings use the rich handcrafted pixel architecture to ensure full walls, roofs, and doors
+  gudang: null,
+  barak_militer: null,
+  tembok: null,
+  hospital: null,
+  tavern: null,
+  market: null,
 
   // Environment & Tiles
   tree: '/assets/sliced/tiles/maple_tree_crop_0.png',
-  treeAlt: '/assets/sliced/tiles/maple_tree_crop_1.png',
   crops: '/assets/sliced/tiles/Spring Crops.png',
-  fence: "/assets/sliced/tiles/Fence's copiar.png",
-  road: '/assets/sliced/tiles/Road copiar.png',
 
   // Characters & Heroes
   farmerHero: '/assets/sliced/heroes/farmer_hero_idle_0.png',
-  heroIdle1: '/assets/sliced/heroes/farmer_hero_idle_1.png',
 
   // Monsters
-  bloodMonster: '/assets/sliced/monsters/blood_monster_frame_0.png',
-  bloodMonster1: '/assets/sliced/monsters/blood_monster_frame_1.png',
-  bloodMonster2: '/assets/sliced/monsters/blood_monster_frame_2.png',
-  demon: '/assets/sliced/monsters/Demon_A.png'
+  bloodMonster: '/assets/sliced/monsters/blood_monster_frame_0.png'
 };
 
 // Start preloading immediately in browser
 if (typeof window !== 'undefined') {
   Object.values(GAME_ASSETS).forEach((src) => {
-    getCachedImage(src);
+    if (src) getCachedImage(src);
   });
 }

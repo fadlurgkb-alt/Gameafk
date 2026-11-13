@@ -26,10 +26,15 @@ export default function Header({
 
   return (
     <header style={{
+      position: 'relative',
+      zIndex: 100,
+      width: '100%',
+      flexShrink: 0,
       padding: '10px 14px',
-      backgroundColor: 'rgba(11, 15, 25, 0.96)',
-      backdropFilter: 'blur(12px)',
-      borderBottom: '1.5px solid rgba(255, 255, 255, 0.08)',
+      backgroundColor: 'rgba(11, 15, 25, 0.98)',
+      backdropFilter: 'blur(16px)',
+      borderBottom: '2px solid rgba(255, 213, 79, 0.25)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.8)',
       display: 'flex',
       flexDirection: 'column',
       gap: '8px'

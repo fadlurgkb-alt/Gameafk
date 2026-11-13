@@ -15,7 +15,8 @@ export default function Tabs({ activeTab, onTabChange }) {
   return (
     <nav style={{
       position: 'relative',
-      zIndex: 20,
+      zIndex: 100,
+      flexShrink: 0,
       display: 'flex',
       backgroundColor: 'rgba(11, 15, 25, 0.95)',
       backdropFilter: 'blur(16px)',

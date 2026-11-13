@@ -470,15 +470,7 @@ export default function App() {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* 1. Fullscreen Map Canvas Layer (100% Viewport) */}
-      <PixelCanvas
-        state={state}
-        isFullscreen={true}
-        onCanvasTap={handleCanvasTap}
-        onSelectBuilding={(b) => setSelectedBuilding(b)}
-      />
-
-      {/* 2. Top Header HUD with Profile & Resources */}
+      {/* 1. Top Header HUD with Profile, CP, and God Mode Console */}
       <Header
         state={state}
         zenithRate={zenithRate}
@@ -490,12 +482,21 @@ export default function App() {
         onMaxAll={handleMaxAll}
       />
 
-      {/* 3. Center Area (When tab is 'peta', completely empty and clicks pass to map!) */}
+      {/* 2. Main Interactive Map & Drawer Body */}
       <div style={{
         flex: 1,
         position: 'relative',
-        pointerEvents: activeTab === 'peta' ? 'none' : 'auto'
+        width: '100%',
+        overflow: 'hidden'
       }}>
+        {/* Fullscreen Map Canvas Layer */}
+        <PixelCanvas
+          state={state}
+          isFullscreen={false}
+          onCanvasTap={handleCanvasTap}
+          onSelectBuilding={(b) => setSelectedBuilding(b)}
+        />
+
         {/* Floating Glassmorphism Drawer when a tab is selected */}
         {activeTab !== 'peta' && (
           <div style={{
