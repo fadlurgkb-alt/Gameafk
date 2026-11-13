@@ -11,6 +11,9 @@ import {
 import TalentTreeCanvas from './TalentTreeCanvas';
 import DungeonArena from './DungeonArena';
 import BuildingVisual from './BuildingVisual';
+import CommanderVisual from './CommanderVisual';
+import ArmoryVisual from './ArmoryVisual';
+import ItemVisual from './ItemVisual';
 
 // Panel 1: Bangunan (23 Bangunan)
 export function BuildingsPanel({ state, onUpgradeBuilding, onSelectBuilding }) {
@@ -223,17 +226,19 @@ export function CommandersPanel({ state, onOpenGacha, onForgeWeapon, onCombineSh
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{
-                    fontSize: '26px',
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '50%',
-                    backgroundColor: cmd.color,
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: '2px solid rgba(255,255,255,0.2)'
+                    border: `2px solid ${cmd.color || '#FFD54F'}`,
+                    boxShadow: `0 0 10px ${cmd.color}44`,
+                    overflow: 'hidden',
+                    flexShrink: 0
                   }}>
-                    {cmd.icon}
+                    <CommanderVisual id={cmd.id} size={44} />
                   </div>
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
@@ -303,11 +308,20 @@ export function CommandersPanel({ state, onOpenGacha, onForgeWeapon, onCombineSh
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={w.img}
-                    alt={w.name}
-                    style={{ width: '40px', height: '40px', objectFit: 'contain' }}
-                  />
+                  <div style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1.5px solid rgba(255, 255, 255, 0.1)',
+                    overflow: 'hidden',
+                    flexShrink: 0
+                  }}>
+                    <ArmoryVisual id={w.id} size={42} />
+                  </div>
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>
                       {w.name}
@@ -480,7 +494,20 @@ export function MarketPanel({ state, onBuyDungeonItem }) {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '24px' }}>{it.icon}</span>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1.5px solid rgba(255, 255, 255, 0.1)',
+                overflow: 'hidden',
+                flexShrink: 0
+              }}>
+                <ItemVisual id={it.id} size={38} />
+              </div>
               <div>
                 <div style={{ fontWeight: '800', fontSize: '13px', color: '#F8FAFC' }}>{it.name}</div>
                 <div style={{ fontSize: '10px', color: '#94A3B8' }}>{it.desc}</div>

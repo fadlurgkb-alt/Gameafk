@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { COMMANDERS_DATABASE } from '../gameState';
+import CommanderVisual from './CommanderVisual';
 
 export default function GachaModal({ isOpen, onClose, gachaTickets, onPerformGacha }) {
   if (!isOpen) return null;
@@ -215,18 +216,19 @@ export default function GachaModal({ isOpen, onClose, gachaTickets, onPerformGac
                 textAlign: 'center'
               }}>
                 <div style={{
-                  fontSize: '48px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                  backgroundColor: 'rgba(15, 23, 42, 0.9)',
                   width: '76px',
                   height: '76px',
-                  borderRadius: '50%',
+                  borderRadius: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: `2px solid ${pulledHero.color}`,
-                  marginBottom: '10px'
+                  border: `2.5px solid ${pulledHero.color}`,
+                  marginBottom: '10px',
+                  overflow: 'hidden',
+                  boxShadow: `0 0 15px ${pulledHero.color}88`
                 }}>
-                  {pulledHero.icon}
+                  <CommanderVisual id={pulledHero.id} size={68} />
                 </div>
 
                 <div style={{

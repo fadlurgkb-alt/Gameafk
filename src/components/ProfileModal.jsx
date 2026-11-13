@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatNumber, calculateCombatPower } from '../gameState';
+import CommanderVisual from './CommanderVisual';
 
 export default function ProfileModal({ isOpen, onClose, state, onSelectAvatar }) {
   if (!isOpen) return null;
@@ -33,16 +34,17 @@ export default function ProfileModal({ isOpen, onClose, state, onSelectAvatar })
             <div style={{
               width: '64px',
               height: '64px',
-              borderRadius: '50%',
-              backgroundColor: currentAvatarHero.color || '#3B82F6',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(15, 23, 42, 0.9)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '32px',
-              border: '3px solid #FFD54F',
-              boxShadow: '0 0 20px rgba(255, 213, 79, 0.4)'
+              border: `3px solid ${currentAvatarHero.color || '#FFD54F'}`,
+              boxShadow: `0 0 20px ${currentAvatarHero.color || '#FFD54F'}66`,
+              overflow: 'hidden',
+              flexShrink: 0
             }}>
-              {currentAvatarHero.icon}
+              <CommanderVisual id={currentAvatarHero.id} size={58} />
             </div>
 
             <div>
@@ -82,23 +84,24 @@ export default function ProfileModal({ isOpen, onClose, state, onSelectAvatar })
                     key={hero.id}
                     onClick={() => onSelectAvatar(hero.id)}
                     style={{
-                      width: '44px',
-                      height: '44px',
-                      borderRadius: '50%',
-                      backgroundColor: hero.color || '#3B82F6',
-                      border: isSelected ? '3px solid #FFD54F' : '1.5px solid rgba(255, 255, 255, 0.2)',
-                      fontSize: '22px',
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                      border: isSelected ? '2.5px solid #FFD54F' : '1.5px solid rgba(255, 255, 255, 0.15)',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
                       transform: isSelected ? 'scale(1.1)' : 'scale(1)',
-                      transition: 'transform 0.15s ease'
+                      transition: 'transform 0.15s ease',
+                      overflow: 'hidden',
+                      padding: 0
                     }}
                     title={hero.name}
                   >
-                    {hero.icon}
+                    <CommanderVisual id={hero.id} size={40} />
                   </button>
                 );
               })}
